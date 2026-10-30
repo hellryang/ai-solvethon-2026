@@ -60,6 +60,10 @@ function ProjectDetail({ meta, id, onClose }: { meta: Meta; id: number | null; o
                 <li>기간: {project.start_date} ~ {project.end_date}</li>
                 <li>직무군: {project.category} · {project.job_family}</li>
                 <li>
+                  기업: {project.org_type} · {project.industry}
+                  {project.style_tags.length > 0 && ` · ${project.style_tags.join(', ')} (특성 태그는 가정값)`}
+                </li>
+                <li>
                   지원: 숙소 {project.housing_support ? '제공' : '미제공'} · 교통비 {project.commute_support ? '지원' : '미지원'}
                 </li>
               </ul>
@@ -192,6 +196,8 @@ export function ProjectsTab({ meta }: { meta: Meta }) {
                   <Badge variant="secondary">{p.work_mode}</Badge>
                   <Badge variant="outline">{p.category}</Badge>
                   <Badge variant="outline">{p.job_family}</Badge>
+                  <Badge variant="outline">{p.org_type}</Badge>
+                  <Badge variant="outline">{p.industry}</Badge>
                 </div>
                 <div className="flex items-end justify-between gap-2">
                   <p className="text-lg font-bold">

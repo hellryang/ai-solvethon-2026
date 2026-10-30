@@ -1,4 +1,4 @@
-// API 계약 타입. 근거: .kiro/specs/gwangju-talent-matching/design.md §4, §7.6, §8.4, §9.
+// API 계약 타입. 근거: .kiro/specs/gwangju-talent-matching/design.md §4, §7.6, §8.4, §9, §14, §15.
 // design.md가 필드 이름을 정하지 않은 부분(meta, talent, project 요청·응답)은
 // DB 컬럼 이름을 그대로 쓰고, 목록형 값(희망 지역, 기술 이름 등)은 배열로 둔다.
 // 백엔드 구현 전에 tasks.md 0.4(API 계약 검토)에서 확정해야 한다.
@@ -31,6 +31,11 @@ export interface Meta {
   gwangju_districts: string[]
   work_modes: WorkMode[]
   pay_grades: PayGrade[]
+  /** 기업 유형 (공공기관, 대기업·제조, 스타트업·IT, 지역 SI) */
+  org_types: string[]
+  industries: string[]
+  /** 기업 특성 태그. 주관적인 값이라 화면에서 가정값으로 표시한다 */
+  style_tags: string[]
 }
 
 export interface TalentSkill {
@@ -106,6 +111,9 @@ export interface ProjectSummary {
   pay_monthly: number
   category: Category
   job_family: string
+  org_type: string
+  industry: string
+  style_tags: string[]
 }
 
 /** GET /projects 목록 항목 */
@@ -125,6 +133,31 @@ export interface Project extends ProjectListItem {
   housing_support: boolean
   commute_support: boolean
   is_demo: boolean
+  skills: ProjectSkill[]
+  roles: ProjectRole[]
+}
+
+/** POST /projects 본문 (기업 담당자 등록) */
+export interface ProjectInput {
+  company_name: string
+  region: Region
+  district: string
+  category: Category
+  job_family: string
+  title: string
+  description: string
+  work_mode: WorkMode
+  onsite_days_per_week: number | null
+  meeting_per_month: number | null
+  pay_monthly: number
+  pay_grade: string
+  start_date: string
+  end_date: string
+  housing_support: boolean
+  commute_support: boolean
+  org_type: string
+  industry: string
+  style_tags: string[]
   skills: ProjectSkill[]
   roles: ProjectRole[]
 }
@@ -177,9 +210,115 @@ export interface RecommendationsResponse {
   items: RecommendationItem[]
 }
 
-// ---- 정주 시뮬레이션 (design.md §7.6) ----
+// ---- 선호 기업과 신규 공고 (design.md §14.4~14.5) ----
 
-export type PayBasis = 'district_posting' | 'family_mean' | 'same_pay_assumed'
+export interface PreferenceFields {
+  org_types: string[]
+  industries: string[]
+  style_tags: string[]
+  preferred_skills: string[]
+  /** 기업 이름, 앞쪽이 우선순위가 높다. 최대 3개 */
+  favorite_companies: string[]
+}
+
+/** GET /talents/{id}/preferences. 저장 전에는 exists가 false이고 목록은 비어 있다 */
+export interface Preference extends PreferenceFields {
+  exists: boolean
+  last_seen_at: string | null
+}
+
+/** GET /companies: 관심 기업 선택지 (등록된 광주·나주·광양 프로젝트의 기업만) */
+export interface CompanyOption {
+  company_name: string
+  region: Region
+  org_type: string
+  industry: string
+}
+
+export interface PrefScore {
+  /** 0~100 */
+  total: number
+  /** 0~25 */
+  org_type: number
+  /** 0~25 */
+  industry: number
+  /** 0~20 */
+  style: number
+  /** 0~30 */
+  stack: number
+  matched: {
+    org_types: string[]
+    industries: string[]
+    style_tags: string[]
+    skills: string[]
+  }
+}
+
+export interface SimilarTo {
+  company: string
+  /** 0~100. 50 이상이면 비슷하다고 본다 */
+  similarity: number
+  same_org_type: boolean
+  same_industry: boolean
+  shared_skills: string[]
+}
+
+export interface PreferenceMatchItem {
+  rank: number
+  project: ProjectSummary & { is_new: boolean }
+  pref: PrefScore
+  /** 관심 기업 본인의 공고이면 1부터 시작하는 우선순위 */
+  favorite_rank: number | null
+  similar_to: SimilarTo | null
+  fit: ScoreParts
+  gaps: SkillGap[]
+  explanation: AiText | null
+}
+
+export interface PreferenceMatchesResponse {
+  preference_set: boolean
+  scope: 'new' | 'all'
+  /** 전체 범위에서 마지막 확인 이후 등록된 공고 수 */
+  new_count: number
+  candidates: number
+  excluded: { closed: number; category: number; region: number }
+  items: PreferenceMatchItem[]
+}
+
+// ---- 지역 기술 수요 (design.md §14.6) ----
+
+export interface StackItem {
+  skill: string
+  /** 그 기술을 요구한 공고의 비율(%). 집계 전이면 null */
+  share_pct: number | null
+  metro_share_pct: number | null
+  /** 미보유는 0 */
+  my_level: number
+  status: 'none' | 'low' | 'ok'
+}
+
+export interface StackGroup {
+  group: string
+  sample_n: number | null
+  small_sample: boolean
+  data_ready: boolean
+  metro_sample_n: number | null
+  metro_label: string | null
+  collected_at: string | null
+  source: string
+  is_assumption: boolean
+  items: StackItem[]
+}
+
+/** GET /stack-demand?talent_id= */
+export interface StackDemandResponse {
+  groups: StackGroup[]
+}
+
+// ---- 정주 시뮬레이션 (design.md §7.6, §15) ----
+
+/** 서울 구별 보수는 수집한 공고 표본의 평균이다 (design.md §15.4) */
+export type PayBasis = 'district_sample_mean'
 
 export interface SourceNote {
   item: string
@@ -223,23 +362,12 @@ export interface UnavailableScenario {
 export interface PayCompareRow {
   district: string
   seoul_pay: number
+  /** 이 구의 보수를 계산한 공고 표본 수 */
+  sample_n: number
   /** 서울 − 선택한 프로젝트. 부호를 그대로 둔다 */
   diff: number
   ratio_pct: number
   take_home_diff: number
-}
-
-export interface BenchmarkPeer {
-  id: number
-  district: string
-  title: string
-  pay_monthly: number
-  pay_grade: string
-  work_mode: WorkMode
-  job_family_match: boolean
-  grade_match: boolean
-  work_mode_match: boolean
-  shared_skills: string[]
 }
 
 export interface SimulationResponse {
@@ -257,7 +385,8 @@ export interface SimulationResponse {
   scenarios: Scenario[]
   unavailable: UnavailableScenario[]
   pay_compare: PayCompareRow[]
-  peers: BenchmarkPeer[]
+  /** 서울 보수의 출처와 한계 (직무 혼합 평균) */
+  seoul_pay_source: { source: string; collected_at: string | null; note: string }
   /** 화면은 best_seoul 키만 쓰고, 차이는 scenarios에서 직접 계산한다 */
   summary: {
     best_seoul: string | null

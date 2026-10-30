@@ -8,17 +8,9 @@ import {
   highlighted, isSeoulScenario, labelForKey, PAY_BASIS_LABEL, scenarioByKey, signed,
   SUPPORT_REASON_LABEL, unavailableLabel, won,
 } from '@/lib/format'
-import type { PayBasis, Scenario, SimulationResponse } from '@/types'
+import type { Scenario, SimulationResponse } from '@/types'
 
 const SEOUL_DISTRICT_ORDER = ['강남구', '영등포구', '중구']
-
-function payBasisFor(sim: SimulationResponse, district: string): PayBasis | null {
-  const fromScenario = scenarioByKey(sim, `seoul_${district}`)?.pay_basis
-  if (fromScenario) return fromScenario
-  // 월세 데이터가 없어 시나리오가 빠진 구는 비교 근거(peers)로 같은 규칙을 읽는다.
-  if (sim.peers.some(p => p.district === district)) return 'district_posting'
-  return sim.peers.length > 0 ? 'family_mean' : 'same_pay_assumed'
-}
 
 // ------------------------------------------------------------ 1. 보수 비교
 
@@ -34,7 +26,7 @@ export function PayCompareCard({ sim }: { sim: SimulationResponse }) {
         <CardTitle>보수 비교: 같은 직무를 서울에서 하면</CardTitle>
         <CardDescription>
           차이는 "서울 − 선택한 프로젝트"입니다. 부호가 +이면 서울 쪽 금액이 더 큽니다.
-          서울 공고는 비교용 가상 공고이며 실제 시장 보수가 아닙니다.
+          서울 보수는 수집한 공고 표본의 구별 평균이며, 직무가 섞여 있어 선택한 프로젝트와 같은 직무의 보수가 아닙니다.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -64,15 +56,14 @@ export function PayCompareCard({ sim }: { sim: SimulationResponse }) {
             </TableRow>
             {rows.map(row => {
               const seoul = scenarioByKey(sim, `seoul_${row.district}`)
-              const basis = payBasisFor(sim, row.district)
+              const basis = seoul?.pay_basis ?? 'district_sample_mean'
               const savingDiff = seoul && local ? seoul.saving_with_support - local.saving_with_support : null
               return (
                 <TableRow key={row.district}>
                   <TableCell className="font-medium">
                     서울 {row.district}
                     <span className="ml-2 inline-flex gap-1 align-middle">
-                      <Badge variant="secondary">가상 공고</Badge>
-                      <AssumptionBadge />
+                      <Badge variant="secondary">표본 {row.sample_n}건</Badge>
                     </span>
                   </TableCell>
                   <TableCell className={cell}>{won(row.seoul_pay)}만 원</TableCell>
@@ -88,7 +79,7 @@ export function PayCompareCard({ sim }: { sim: SimulationResponse }) {
                     ) : `${signed(savingDiff)}만 원`}
                   </TableCell>
                   <TableCell>
-                    {basis ? <Badge variant="outline">{PAY_BASIS_LABEL[basis]}</Badge> : '-'}
+                    <Badge variant="outline">{PAY_BASIS_LABEL[basis]}</Badge>
                   </TableCell>
                 </TableRow>
               )
@@ -97,36 +88,13 @@ export function PayCompareCard({ sim }: { sim: SimulationResponse }) {
         </Table>
 
         <details className="rounded-lg border p-3 text-sm">
-          <summary className="cursor-pointer font-medium">비교 근거 보기</summary>
-          {sim.peers.length === 0 ? (
-            <p className="mt-2 text-muted-foreground">
-              같은 직무군({sim.project.job_family})의 서울 비교 공고가 없어 선택한 프로젝트와 같은 단가로 가정했습니다.
-            </p>
-          ) : (
-            <ul className="mt-2 space-y-2">
-              {sim.peers.map(peer => (
-                <li key={peer.id} className="space-y-1">
-                  <p>
-                    <strong>서울 {peer.district}</strong> · {peer.title} · 월 {won(peer.pay_monthly)}만 원
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 text-xs">
-                    <Badge variant={peer.job_family_match ? 'secondary' : 'outline'}>
-                      직무군 {peer.job_family_match ? '일치' : '불일치'}
-                    </Badge>
-                    <Badge variant={peer.grade_match ? 'secondary' : 'outline'}>
-                      단가 등급 {peer.grade_match ? '일치' : '불일치'}
-                    </Badge>
-                    <Badge variant={peer.work_mode_match ? 'secondary' : 'outline'}>
-                      근무 형태 {peer.work_mode_match ? '일치' : '불일치'}
-                    </Badge>
-                    <span className="text-muted-foreground">
-                      공통 기술: {peer.shared_skills.length > 0 ? peer.shared_skills.join(', ') : '없음'}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+          <summary className="cursor-pointer font-medium">서울 보수 기준과 한계 보기</summary>
+          <ul className="mt-2 space-y-1 text-muted-foreground">
+            <li>출처: {sim.seoul_pay_source.source}{sim.seoul_pay_source.collected_at ? ` · 수집일 ${sim.seoul_pay_source.collected_at}` : ''}</li>
+            <li>{sim.seoul_pay_source.note}</li>
+            <li>범위로 적힌 공고는 중앙값, "월 N만 원 이상"은 하한값으로 계산했고, 비공개 공고는 제외했습니다.</li>
+            <li>표본이 3~4건이라 한두 건이 평균을 크게 바꿀 수 있습니다.</li>
+          </ul>
         </details>
       </CardContent>
     </Card>
@@ -156,7 +124,6 @@ function ScenarioRow({ s, scale }: { s: Scenario; scale: number }) {
         <span className="font-semibold">{s.label}</span>
         {s.highlight && <Badge>강조</Badge>}
         {seoul && <Badge variant="secondary">서울 비교</Badge>}
-        {seoul && <Badge variant="secondary">가상 공고</Badge>}
         {assumption && <AssumptionBadge />}
         {deficit && <Badge variant="destructive">적자</Badge>}
       </div>

@@ -3,30 +3,35 @@ import { Loader2, MapPinned, Plus, RefreshCw } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { EmptyState, ErrorBanner, NativeSelect } from '@/components/common'
+import { CompanyTab } from '@/components/CompanyTab'
+import { PreferenceTab } from '@/components/PreferenceTab'
 import { ProfileTab } from '@/components/ProfileTab'
 import { ProjectsTab } from '@/components/ProjectsTab'
 import { RecommendTab } from '@/components/RecommendTab'
 import { SimulationTab } from '@/components/SimulationTab'
+import { StackDemandTab } from '@/components/StackDemandTab'
 import { api, errorMessage, postJson, TEAM } from '@/lib/api'
 import type { AiMode, Health, Meta, Talent, TalentSummary } from '@/types'
 
 import './App.css'
 
 type Role = 'talent' | 'company'
-type Tab = 'projects' | 'profile' | 'recommend' | 'simulate' | 'company'
+type Tab = 'projects' | 'profile' | 'recommend' | 'preference' | 'stack' | 'simulate' | 'company'
 
 const TABS: Record<Role, { id: Tab; label: string }[]> = {
   talent: [
     { id: 'projects', label: '프로젝트' },
     { id: 'profile', label: '내 프로필' },
     { id: 'recommend', label: '추천' },
+    { id: 'preference', label: '선호·새 공고' },
+    { id: 'stack', label: '지역 기술 수요' },
     { id: 'simulate', label: '정주 시뮬레이션' },
   ],
   company: [
     { id: 'projects', label: '프로젝트' },
-    { id: 'company', label: '기업' },
+    { id: 'company', label: '공고 등록' },
   ],
 }
 
@@ -109,7 +114,8 @@ function App() {
       setLoadError(errorMessage(e, '인재 목록을 새로 불러오지 못했습니다.')))
   }
 
-  const needsTalent = tab === 'recommend' || tab === 'simulate' || (tab === 'profile' && !creating)
+  const needsTalent = tab === 'recommend' || tab === 'preference' || tab === 'stack' || tab === 'simulate' ||
+    (tab === 'profile' && !creating)
   const noTalents = talents !== null && talents.length === 0
 
   return (
@@ -215,20 +221,12 @@ function App() {
                 {tab === 'recommend' && talentId !== null && (
                   <RecommendTab talentId={talentId} onSimulate={openSimulation} />
                 )}
+                {tab === 'preference' && talentId !== null && <PreferenceTab talentId={talentId} meta={meta} />}
+                {tab === 'stack' && talentId !== null && <StackDemandTab talentId={talentId} />}
                 {tab === 'simulate' && talentId !== null && (
                   <SimulationTab talentId={talentId} projectId={projectId} onProjectChange={setProjectId} />
                 )}
-                {tab === 'company' && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>기업 담당자 화면</CardTitle>
-                      <CardDescription>
-                        프로젝트 등록과 지원자 수락·거절은 P1 기능이라 이번 MVP 화면에는 포함하지 않았습니다.
-                        현재 프로젝트 목록은 "프로젝트" 탭에서 볼 수 있습니다.
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
-                )}
+                {tab === 'company' && <CompanyTab meta={meta} />}
               </>
             )}
           </section>

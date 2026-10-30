@@ -65,6 +65,42 @@ export function EmptyState({ children }: { children: ReactNode }) {
   )
 }
 
+/** 체크박스 묶음. 선택 순서를 유지하고, max가 있으면 그 개수까지만 고를 수 있다 */
+export function CheckGroup({
+  label, options, value, onChange, max, error,
+}: {
+  label: string
+  options: string[]
+  value: string[]
+  onChange: (next: string[]) => void
+  max?: number
+  error?: string
+}) {
+  const full = max !== undefined && value.length >= max
+  return (
+    <div className="space-y-1.5">
+      <span className="text-sm font-medium">{label}</span>
+      <div role="group" aria-label={label} className="flex flex-wrap gap-x-4 gap-y-1.5">
+        {options.map(option => {
+          const checked = value.includes(option)
+          return (
+            <label key={option} className="flex items-center gap-1.5 text-sm">
+              <input
+                type="checkbox" className="size-4 accent-primary" checked={checked}
+                disabled={!checked && full}
+                onChange={() => onChange(checked ? value.filter(v => v !== option) : [...value, option])}
+              />
+              {option}
+            </label>
+          )
+        })}
+      </div>
+      {max !== undefined && <p className="text-xs text-muted-foreground">최대 {max}개까지 고를 수 있습니다.</p>}
+      {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
+    </div>
+  )
+}
+
 /** 수치 옆에 붙이는 "가정값" 라벨 */
 export function AssumptionBadge({ title }: { title?: string }) {
   return <Badge variant="outline" title={title} className="text-amber-700 dark:text-amber-400">가정값</Badge>

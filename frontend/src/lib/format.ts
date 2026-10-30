@@ -21,9 +21,7 @@ export function signed(n: number): string {
 }
 
 export const PAY_BASIS_LABEL: Record<PayBasis, string> = {
-  district_posting: '같은 구 공고',
-  family_mean: '서울 동일 직무 평균',
-  same_pay_assumed: '동일 단가 가정',
+  district_sample_mean: '구별 공고 표본 평균 (직무 혼합)',
 }
 
 export const SUPPORT_REASON_LABEL: Record<NonNullable<Scenario['support_reason']>, string> = {
