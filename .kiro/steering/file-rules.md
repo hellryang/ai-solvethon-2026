@@ -20,9 +20,9 @@ inclusion: always
 
 | 무엇 | 위치 |
 |---|---|
-| 팀 주제 테이블 (인재·프로젝트·관심 저장) | `backend/app/team/models.py` |
+| 팀 주제 테이블 | `backend/app/team/models.py` — 지금 컨셉은 새 테이블이 없다. 필요하면 첫 배포 전에 팀과 정한다 |
 | 팀 주제 API | `backend/app/team/routes.py` |
-| 매칭 점수 계산, 기술 사전 | `backend/app/team/` 안에 모듈로 (예: `matching.py`, `skills.py`) — `team/models.py`에서 import해 등록 |
+| 계산·적합도·스냅샷 | `backend/app/team/` 안의 모듈: `calc.py`(남는 돈·손익분기), `matching.py`(적합도), `snapshot.py`(지역 통계·가상 프로젝트·기술 사전 상수). **배포물에는 .py만 들어가고 `data` 폴더는 빠진다** (`ops/deploy.py:37-43`) |
 | 백엔드 테스트 | `backend/tests/test_team_*.py` |
 | 화면 | `frontend/src/` — 화면이 커지면 `frontend/src/pages/`, 재사용 조각은 `frontend/src/components/` |
 | 기능 명세 | `.kiro/specs/<기능-이름>/` — `_template`을 참고해 Kiro Spec으로 만든다 |
@@ -37,4 +37,4 @@ inclusion: always
 
 - Python 파일·함수: `snake_case`
 - React 컴포넌트 파일: `PascalCase.tsx`
-- spec 폴더: 영어 kebab-case (예: `.kiro/specs/talent-matching/`)
+- spec 폴더: 영어 kebab-case (예: `.kiro/specs/net-savings-match/`)
