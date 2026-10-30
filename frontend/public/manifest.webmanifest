@@ -1,0 +1,14 @@
+{
+  "name": "남는 돈 비교 · 5조 키로로",
+  "short_name": "남는 돈",
+  "description": "광주·전남 사회초년생에게 서울 연봉 말고 여기서 남는 돈을 보여 줍니다.",
+  "lang": "ko",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F5F6F4",
+  "theme_color": "#FFFFFF",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
