@@ -16,6 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 운영진 스타터 r2와 같은 버전: Python 3.12, Node 24
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -23,24 +24,18 @@ jobs:
       - name: 구조 검사
         run: python scripts/check_structure.py
 
-      # 아래 단계는 해당 파일이 생긴 뒤부터 자동으로 돈다
       - name: 백엔드 테스트
-        if: hashFiles('backend/tests/**/*.py') != ''
-        env:
-          PYTHONPATH: backend/src
-          AWS_DEFAULT_REGION: ap-northeast-2
+        working-directory: backend
         run: |
-          pip install -r backend/requirements.txt pytest
-          pytest -q backend/tests
+          pip install --require-hashes -r requirements.lock
+          python -m pytest -q
 
       - uses: actions/setup-node@v4
-        if: hashFiles('frontend/package.json') != ''
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: 프론트엔드 빌드
-        if: hashFiles('frontend/package.json') != ''
         working-directory: frontend
         run: |
-          npm install
+          npm ci --no-audit --no-fund
           npm run build

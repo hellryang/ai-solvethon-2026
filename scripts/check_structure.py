@@ -19,9 +19,12 @@ ROOT_ALLOWED = {
     ".kiro",
     "frontend",
     "backend",
-    "infra",
     "docs",
     "scripts",
+    # 운영진 공통 스타터 r2가 루트에 두는 항목
+    "ops",
+    "VALIDATION.md",
+    "template-manifest.json",
 }
 FORBIDDEN_SUFFIXES = {".db", ".sqlite", ".sqlite3", ".pem", ".key", ".pfx", ".zip"}
 MAX_BYTES = 5 * 1024 * 1024
@@ -42,7 +45,7 @@ def candidate_files() -> list[Path]:
 def find_problems(path: Path) -> list[str]:
     problems = []
     if path.parts[0] not in ROOT_ALLOWED:
-        problems.append("루트에 허용되지 않은 항목 → .kiro/steering/structure.md 표를 보고 옮기세요 (일회성이면 scratch/)")
+        problems.append("루트에 허용되지 않은 항목 → .kiro/steering/file-rules.md 표를 보고 옮기세요 (일회성이면 scratch/)")
     if path.name.startswith(".env") and path.name != ".env.example":
         problems.append("환경변수 파일은 커밋 금지 → .gitignore 확인")
     if path.suffix.lower() in FORBIDDEN_SUFFIXES:

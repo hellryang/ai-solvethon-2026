@@ -1,37 +1,50 @@
-# 비밀값 — Public 저장소
+# 운영진 공통 스타터 r2의 .gitignore + 팀 추가 항목
+# .kiro/는 제출 필수 항목이므로 절대 여기에 넣지 않는다
+
+# Runtime dependencies and build products
+node_modules/
+.venv/
+__pycache__/
+*.py[cod]
+dist/
+*.tsbuildinfo
+.pytest_cache/
+
+# Credentials and operational configuration — Public 저장소
 .env
 .env.*
 !.env.example
 *.pem
 *.key
+*.pfx
+*.p12
+.aws/
+.ssh/
+credentials
+credentials.json
 
-# 일회성 실험 코드 (structure.md 규칙 2)
-scratch/
-
-# Python
-.venv/
-venv/
-__pycache__/
-*.pyc
-.pytest_cache/
-
-# Node
-node_modules/
-dist/
-
-# AWS
-.aws-sam/
-cdk.out/
-
-# 로컬 데이터
-*.db
+# Runtime records and backups, never project source
 *.sqlite
 *.sqlite3
+*.sqlite-*
+*.sqlite3-*
+*.db
+*.db-*
+/data/
+/uploads/
+/kirothon-data/
+/kirothon-backups/
+/kirothon-deployments/
+/.local-data/
+*.zip
+*.b64
+*.log
 
-# OS·에디터
+# 일회성 실험 코드 (file-rules.md 규칙 2)
+scratch/
+
+# Local-only editor/OS state
 .DS_Store
 Thumbs.db
-.vscode/
 .idea/
-
-# .kiro/는 제출 필수 항목이므로 절대 여기에 넣지 않는다
+.vscode/
