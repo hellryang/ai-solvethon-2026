@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "구조 검사",
+      "description": "에이전트 턴이 끝날 때마다 루트에 새 파일이 생겼는지, .env·DB·큰 파일이 커밋 대상에 들어갔는지 검사한다. 실패하면 출력된 경로를 structure.md에 맞게 옮긴다.",
+      "trigger": "Stop",
+      "action": {
+        "type": "command",
+        "command": "python scripts/check_structure.py"
+      },
+      "timeout": 30
+    }
+  ]
+}
