@@ -433,6 +433,8 @@ export interface SavingsProject {
   skills_from_posting: string[]
   salary_text: string
   salary_floor_manwon: number | null
+  /** 상주/재택 탭. 지금 공고는 모두 상주다 */
+  work_mode: '상주' | '재택'
 }
 
 /** GET /savings/data */
@@ -537,10 +539,99 @@ export interface AnalysisResponse {
   mode: AiMode
 }
 
-/** POST /savings/roadmap */
+/** 회사마다 부족한 기술 (적합도 점수와 같은 기준) */
+export interface RoadmapGap {
+  project_id: string
+  display_name: string
+  owned_hits: string[]
+  extended_hits: string[]
+  missing: string[]
+}
+
+/** 부족한 기술을 보여 줄 수 있는 자격증 (공고의 지원 조건은 아니다) */
+export interface RoadmapCertificate {
+  name: string
+  issuer: string
+  covers: string[]
+  for_companies: string[]
+  start_month: number
+  end_month: number
+}
+
+export interface RoadmapProject {
+  project_id: string
+  display_name: string
+  title: string
+  description: string
+  covers: string[]
+  /** template = AI 응답이 없거나 로컬 모의 AI라 공고 업무로 만든 문장 */
+  source: 'ai' | 'template'
+  start_month: number
+  end_month: number
+}
+
+/** POST /savings/roadmap. 로드맵에는 자격증과 기업별 프로젝트 두 가지만 들어간다 */
 export interface RoadmapResponse {
-  lines: Record<'1개월' | '3개월' | '6개월' | '경력', string> | null
-  raw: string
-  mode: AiMode
+  gaps: RoadmapGap[]
+  certificates: RoadmapCertificate[]
+  projects: RoadmapProject[]
+  /** AI를 부르지 못했으면 null */
+  mode: AiMode | null
+  ai_error: string | null
   totals: { project_id: string; display_name: string; cumulative: Cumulative }[]
+}
+
+// ---- 인재 PR (backend/app/team/talent_pr_routes.py). 서버 메모리에 저장돼 재시작하면 사라진다 ----
+
+export type MemberType = '개인' | '팀'
+export type PrWorkMode = '상주' | '재택'
+export type PrLevel = '초급' | '중급' | '고급'
+export type PrRegion = '광주' | '나주' | '광양' | '전남 기타'
+export type PrSort = 'career' | 'projects' | 'recent'
+
+/** 기업 화면에 보이는 PR. 이름은 성만 ("이**") */
+export interface TalentPR {
+  id: number
+  display_name: string
+  headline: string
+  intro: string
+  /** 본인이 직접 쓴 기술 (사전에서 고르지 않는다) */
+  skills: string[]
+  career_years: number
+  project_count: number
+  member_type: MemberType
+  work_modes: PrWorkMode[]
+  level: PrLevel
+  regions: PrRegion[]
+  /** YYYY-MM-DD */
+  available_from: string | null
+  /** 첫 장이 대표 사진 */
+  image_urls: string[]
+  /** 시연용 가상 인물 */
+  is_sample: boolean
+}
+
+export interface TalentPRList {
+  items: TalentPR[]
+}
+
+/** POST·PUT /pr 본문. images는 data URL (JPEG·PNG·WEBP, 장당 300KB 이하, 최대 3장) */
+export interface TalentPRInput {
+  name: string
+  headline: string
+  intro: string
+  skills: string[]
+  career_years: number
+  project_count: number
+  member_type: MemberType
+  work_modes: PrWorkMode[]
+  level: PrLevel
+  regions: PrRegion[]
+  available_from: string | null
+  images: string[]
+}
+
+/** POST /pr 응답. 편집 토큰은 이때 한 번만 온다 */
+export interface TalentPRCreated extends TalentPR {
+  edit_token: string
 }

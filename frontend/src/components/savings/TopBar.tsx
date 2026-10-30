@@ -2,7 +2,7 @@
 // 상단 바: 높이 52px, 흰 바탕, 아래 1px 테두리, 탭은 아이콘 위 + 12px 라벨 아래 (docs/ui-reference.md §2).
 // 하단 탭바: 심사위원이 폰으로 접속하므로 1024px 미만에서는 앱처럼 화면 아래에 고정한다.
 
-import { BookOpen, House, Route as RouteIcon, Scale } from 'lucide-react'
+import { BookOpen, House, Route as RouteIcon, Scale, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -31,8 +31,16 @@ function navTabs(compareHref: string, pickCount: number): NavTab[] {
     { page: 'home', label: '추천', icon: House, to: href.home, count: 0 },
     { page: 'compare', label: '남는 돈 비교', icon: Scale, to: compareHref, count: 0 },
     { page: 'roadmap', label: '준비 로드맵', icon: RouteIcon, to: href.roadmap, count: pickCount },
+    // 기업용 추가 기능: 인재 PR 목록·상세·작성 화면 모두 이 탭에 속한다
+    { page: 'talents', label: '인재 PR', icon: Users, to: href.talents, count: 0 },
     { page: 'sources', label: '계산 기준', icon: BookOpen, to: href.sources, count: 0 },
   ]
+}
+
+/** 현재 화면이 이 탭에 속하는지. 인재 PR 상세·작성 화면은 '인재 PR' 탭으로 본다 */
+function isActive(tab: NavTab, page: Route['page']): boolean {
+  if (tab.page === 'talents') return page === 'talents' || page === 'talent' || page === 'talent-edit'
+  return tab.page === page
 }
 
 function TabIcon({ tab }: { tab: NavTab }) {
@@ -59,7 +67,7 @@ export function TopBar({ page, compareHref, pickCount, aiMode }: NavProps & { ai
         </a>
         <nav aria-label="주요 화면" className="hidden h-full lg:flex">
           {navTabs(compareHref, pickCount).map(tab => {
-            const active = tab.page === page
+            const active = isActive(tab, page)
             return (
               <a
                 key={tab.page} href={tab.to} aria-current={active ? 'page' : undefined}
@@ -89,9 +97,9 @@ export function BottomNav({ page, compareHref, pickCount }: NavProps) {
       aria-label="주요 화면"
       className="fixed inset-x-0 bottom-0 z-30 border-t bg-card pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
-      <div className="mx-auto grid h-16 max-w-lg grid-cols-4">
+      <div className="mx-auto grid h-16 max-w-lg grid-cols-5">
         {navTabs(compareHref, pickCount).map(tab => {
-          const active = tab.page === page
+          const active = isActive(tab, page)
           return (
             <a
               key={tab.page} href={tab.to} aria-current={active ? 'page' : undefined}

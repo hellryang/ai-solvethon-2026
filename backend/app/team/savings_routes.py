@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 
 from ..ai_service import generate_text
 from . import profile_parse as pp
+from . import roadmap as rm
 from . import savings_data as d
 from .project_fit import fit_score, recommend, seoul_counterpart
 from .savings import Profile, car_fixed_monthly, compare
@@ -142,14 +143,27 @@ def analysis(body: CompareIn) -> dict[str, Any]:
 
 @router.post("/roadmap")
 def roadmap(body: RoadmapIn) -> dict[str, Any]:
-    """③ 1~3순위 회사 기준 1·3·6개월 준비 항목과 1년 경력의 의미."""
+    """③ 1~3순위 -> 부족한 기술, 필요 자격증, 기업별 프로젝트(이름만 AI 1회, 실패하면 템플릿)."""
     profile = body.profile.to_profile()
     picks = [_project(pid) for pid in dict.fromkeys(body.project_ids)]
-    reply = generate_text(pp.build_roadmap_text(profile, picks), pp.INSTRUCTION_ROADMAP, pp.MODEL_ID)
-    lines = pp.parse_lines(reply["text"], ("1개월", "3개월", "6개월", "경력"))
+    gaps = rm.skill_gaps(profile, picks)
+    ai_projects: dict[str, tuple[str, str]] = {}
+    mode, ai_error = None, None
+    try:
+        missing = {g["project_id"]: g["missing"] for g in gaps}
+        reply = generate_text(pp.build_roadmap_text(profile, picks, missing), pp.INSTRUCTION_ROADMAP, pp.MODEL_ID)
+        mode = reply["mode"]
+        # The local mock echoes the input back; never show that as an AI answer.
+        if mode != "mock":
+            ai_projects = rm.parse_ai_projects(reply["text"], tuple(p["display_name"] for p in picks))
+    except HTTPException as exc:
+        if exc.status_code < 429:
+            raise
+        ai_error = str(exc.detail)
+    plan = rm.build_plan(picks, gaps, ai_projects)
     totals = []
     for p in picks:
         r = compare(p, seoul_counterpart(p), profile)
         totals.append({"project_id": p["id"], "display_name": p["display_name"],
                        "cumulative": r["cumulative"]})
-    return {"lines": lines, "raw": reply["text"], "mode": reply["mode"], "totals": totals}
+    return {**plan, "mode": mode, "ai_error": ai_error, "totals": totals}

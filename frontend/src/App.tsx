@@ -20,6 +20,10 @@ import { ComparePage } from '@/pages/ComparePage'
 import { HomePage } from '@/pages/HomePage'
 import { RoadmapPage } from '@/pages/RoadmapPage'
 import { SourcesPage } from '@/pages/SourcesPage'
+import { TalentDetailPage } from '@/pages/TalentDetailPage'
+import { TalentEditPage } from '@/pages/TalentEditPage'
+import { TalentListPage } from '@/pages/TalentListPage'
+import { cn } from '@/lib/utils'
 import type { AiMode, Health, ParseResponse, SavingsData, SavingsProfile } from '@/types'
 
 function App() {
@@ -66,6 +70,7 @@ function App() {
   }, [viewingProjectId, setLastProjectId])
 
   const isDefaultProfile = parseInfo === null && profile.skills.length === 0 && profile.home_city === null
+  const isTalentPage = route.page === 'talents' || route.page === 'talent' || route.page === 'talent-edit'
   const nav = { page: route.page, compareHref: href.compare(viewingProjectId ?? lastProjectId), pickCount: picks.ids.length }
 
   function onParsed(result: ParseResponse) {
@@ -94,10 +99,18 @@ function App() {
     <div className="min-h-svh">
       <TopBar {...nav} aiMode={aiMode} />
 
-      <div className="mx-auto grid max-w-[1128px] grid-cols-1 gap-4 px-4 pt-4 pb-[calc(6rem_+_env(safe-area-inset-bottom))] lg:grid-cols-[216px_minmax(0,1fr)_312px] lg:gap-6 lg:py-6">
-        <aside aria-label="내 조건" className="hidden lg:sticky lg:top-[76px] lg:block lg:self-start">
-          <ConditionCard variant="full" {...conditionProps} />
-        </aside>
+      <div
+        className={cn(
+          'mx-auto grid max-w-[1128px] grid-cols-1 gap-4 px-4 pt-4 pb-[calc(6rem_+_env(safe-area-inset-bottom))] lg:gap-6 lg:py-6',
+          // 인재 PR(기업용) 화면은 구직자용 양옆 열 없이 넓게 쓴다
+          isTalentPage ? 'lg:grid-cols-1' : 'lg:grid-cols-[216px_minmax(0,1fr)_312px]',
+        )}
+      >
+        {!isTalentPage && (
+          <aside aria-label="내 조건" className="hidden lg:sticky lg:top-[76px] lg:block lg:self-start">
+            <ConditionCard variant="full" {...conditionProps} />
+          </aside>
+        )}
 
         <main className="min-w-0 space-y-4">
           {dataError && (
@@ -129,6 +142,14 @@ function App() {
           )}
           {route.page === 'roadmap' && <RoadmapPage profile={profile} picks={picks} />}
           {route.page === 'sources' && <SourcesPage data={data} />}
+          {route.page === 'talents' && <TalentListPage />}
+          {route.page === 'talent' && <TalentDetailPage key={route.talentId} talentId={route.talentId} />}
+          {route.page === 'talent-edit' && (
+            <TalentEditPage
+              key={route.talentId ?? 'new'} talentId={route.talentId}
+              suggestedSkills={profile.skills} suggestedRegion={profile.home_city}
+            />
+          )}
           {route.page === 'not-found' && (
             <section className="rounded-xl border bg-card p-8 text-center">
               <h1 className="text-lg font-bold">없는 화면입니다</h1>
@@ -143,10 +164,12 @@ function App() {
           </p>
         </main>
 
-        <aside aria-label="내 순위와 계산 기준" className="hidden space-y-4 lg:sticky lg:top-[76px] lg:block lg:self-start">
-          <PickList profile={profile} picks={picks} />
-          <BasisCard assumptions={data?.assumptions ?? null} />
-        </aside>
+        {!isTalentPage && (
+          <aside aria-label="내 순위와 계산 기준" className="hidden space-y-4 lg:sticky lg:top-[76px] lg:block lg:self-start">
+            <PickList profile={profile} picks={picks} />
+            <BasisCard assumptions={data?.assumptions ?? null} />
+          </aside>
+        )}
       </div>
 
       <BottomNav {...nav} />

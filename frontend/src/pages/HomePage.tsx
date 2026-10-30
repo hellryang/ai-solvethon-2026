@@ -13,6 +13,7 @@ import { EXAMPLE_INTROS, LIST_TABS, parseIntro } from '@/lib/savings'
 import type { ListTab } from '@/lib/savings'
 import { useCompares, useRecommend } from '@/lib/useSavings'
 import type { Picks } from '@/lib/useSavings'
+import { cn } from '@/lib/utils'
 import type { ParseResponse, SavingsProfile, SavingsProject } from '@/types'
 
 interface HomePageProps {
@@ -29,6 +30,7 @@ export function HomePage({ intro, onIntroChange, profile, onParsed, picks, proje
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [lastSource, setLastSource] = useState<ParseResponse['source'] | null>(null)
+  const [mode, setMode] = useState<WorkMode>('상주')
   const [tab, setTab] = useState<ListTab>('추천 3곳')
 
   async function read(event: FormEvent) {
@@ -41,6 +43,7 @@ export function HomePage({ intro, onIntroChange, profile, onParsed, picks, proje
       const result = await parseIntro(text)
       onParsed(result)
       setLastSource(result.source)
+      setMode('상주')
       setTab('추천 3곳')
     } catch (e) {
       setError(errorMessage(e, '자기소개를 읽지 못했습니다.'))
@@ -99,17 +102,49 @@ export function HomePage({ intro, onIntroChange, profile, onParsed, picks, proje
       </section>
 
       <section aria-labelledby="list-title" className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 id="list-title" className="text-base font-semibold">
-            {tab === '추천 3곳' ? '나에게 맞는 전남·광주 공고' : `${tab} 공고`}
-          </h2>
-          <PillTabs tabs={LIST_TABS} value={tab} onChange={setTab} label="공고 목록 보기" />
+        <div role="tablist" aria-label="근무 형태" className="flex gap-6 border-b">
+          {WORK_MODES.map(option => {
+            const active = option === mode
+            const count = projects?.filter(project => project.work_mode === option).length
+            return (
+              <button
+                key={option} type="button" role="tab" aria-selected={active} onClick={() => setMode(option)}
+                className={cn(
+                  '-mb-px border-b-2 pb-2 text-base transition-colors',
+                  active ? 'border-foreground font-bold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {option} 프로젝트
+                {count !== undefined && <span className="ml-1 text-sm text-primary">{count}</span>}
+              </button>
+            )
+          })}
         </div>
-        <ProjectList tab={tab} profile={profile} picks={picks} projects={projects} />
+
+        {mode === '재택' ? (
+          <EmptyState>
+            재택 공고는 아직 없습니다. 지금 공고 12곳은 모두 정규직 상주입니다.
+            <br />
+            고용24에서 광주·전남 재택 공고를 모으는 대로 여기에 보입니다.
+          </EmptyState>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 id="list-title" className="text-base font-semibold">
+                {tab === '추천 3곳' ? '나에게 맞는 전남·광주 공고' : `${tab} 공고`}
+              </h2>
+              <PillTabs tabs={LIST_TABS} value={tab} onChange={setTab} label="공고 목록 보기" />
+            </div>
+            <ProjectList tab={tab} profile={profile} picks={picks} projects={projects} />
+          </>
+        )}
       </section>
     </>
   )
 }
+
+type WorkMode = SavingsProject['work_mode']
+const WORK_MODES: WorkMode[] = ['상주', '재택']
 
 interface ProjectListProps {
   tab: ListTab
@@ -122,9 +157,10 @@ interface ProjectListProps {
 function ProjectList({ tab, profile, picks, projects }: ProjectListProps) {
   const isRecommend = tab === '추천 3곳'
   const recommend = useRecommend(profile)
+  // 이 목록은 상주 탭 전용이다. 재택 공고가 들어오면 재택 탭에서 따로 보여 준다
   const ids = isRecommend
-    ? (recommend.data ?? []).map(item => item.project.id)
-    : (projects ?? []).filter(project => project.place === tab).map(project => project.id)
+    ? (recommend.data ?? []).filter(item => item.project.work_mode === '상주').map(item => item.project.id)
+    : (projects ?? []).filter(project => project.place === tab && project.work_mode === '상주').map(project => project.id)
   const compares = useCompares(profile, ids)
 
   if (isRecommend && profile.skills.length === 0) {

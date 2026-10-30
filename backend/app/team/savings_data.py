@@ -129,15 +129,19 @@ SUBSIDIES: tuple[dict[str, Any], ...] = (
 
 JEONNAM_CITIES: tuple[str, ...] = ("광주", "나주", "광양")
 SEOUL_DISTRICTS: tuple[str, ...] = ("강남구", "중구")  # 영등포구 제외 (10/30 19:35)
+# 화면의 상주/재택 탭. 고용24 공고 20곳은 모두 정규직 상주라 재택 공고는 아직 없다
+# (10/30 결정: 재택 탭은 만들고 비워 둔다. 실제 공고를 찾으면 _p(..., work_mode="재택")로 넣는다).
+WORK_MODES: tuple[str, ...] = ("상주", "재택")
 
 
 def _p(pid: str, place: str, display: str, company: str, work: str,
        skills: tuple[str, ...], posted: tuple[str, ...], salary_text: str,
-       salary_floor: int | None) -> dict[str, Any]:
+       salary_floor: int | None, work_mode: str = "상주") -> dict[str, Any]:
     return {
         "id": pid, "place": place, "display_name": display, "company": company,
         "work": work, "skills": skills, "skills_from_posting": posted,
         "salary_text": salary_text, "salary_floor_manwon": salary_floor,
+        "work_mode": work_mode,
     }
 
 

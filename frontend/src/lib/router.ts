@@ -8,6 +8,10 @@ export type Route =
   | { page: 'compare'; projectId: string | null }
   | { page: 'roadmap' }
   | { page: 'sources' }
+  // 기업이 보는 인재 PR (추가 기능)
+  | { page: 'talents' }
+  | { page: 'talent'; talentId: number }
+  | { page: 'talent-edit'; talentId: number | null }
   | { page: 'not-found' }
 
 /** savings_data.py 전남·광주 공고 id 형식 (예: NJ-D). 주소로 들어온 값은 이 형식만 받는다 */
@@ -18,6 +22,10 @@ export const href = {
   compare: (projectId?: string | null): string => (projectId ? `#/compare/${projectId}` : '#/compare'),
   roadmap: '#/roadmap',
   sources: '#/sources',
+  talents: '#/talents',
+  talentNew: '#/talents/new',
+  talent: (id: number): string => `#/talents/${id}`,
+  talentEdit: (id: number): string => `#/talents/${id}/edit`,
 }
 
 export function parseRoute(hash: string): Route {
@@ -26,8 +34,15 @@ export function parseRoute(hash: string): Route {
   if (path === '/roadmap') return { page: 'roadmap' }
   if (path === '/sources') return { page: 'sources' }
   if (path === '/compare') return { page: 'compare', projectId: null }
-  const match = path.match(/^\/compare\/([^/]+)$/)
-  if (match && PROJECT_ID.test(match[1])) return { page: 'compare', projectId: match[1] }
+  if (path === '/talents') return { page: 'talents' }
+  if (path === '/talents/new') return { page: 'talent-edit', talentId: null }
+  const compare = path.match(/^\/compare\/([^/]+)$/)
+  if (compare && PROJECT_ID.test(compare[1])) return { page: 'compare', projectId: compare[1] }
+  const talent = path.match(/^\/talents\/(\d{1,6})(\/edit)?$/)
+  if (talent) {
+    const talentId = Number(talent[1])
+    return talent[2] ? { page: 'talent-edit', talentId } : { page: 'talent', talentId }
+  }
   return { page: 'not-found' }
 }
 

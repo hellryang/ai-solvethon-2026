@@ -28,9 +28,9 @@ INSTRUCTION_ANALYSIS = (
     "금액은 주어진 숫자만 그대로 쓰고 새 숫자를 만들지 마세요."
 )
 INSTRUCTION_ROADMAP = (
-    "선택한 회사들의 필요 기술과 사용자 기술을 비교해 정확히 4줄로 쓰세요. 마크다운 금지. "
-    "1개월: 할 일. 3개월: 할 일. 6개월: 할 일. 경력: 이 회사에서 1년 일하면 얻는 것 한 문장. "
-    "주어진 정보에 없는 회사 사실과 숫자는 쓰지 마세요."
+    "회사마다 부족한 기술을 채울 포트폴리오 프로젝트를 1개씩, 회사 하나에 한 줄로 쓰세요. 마크다운 금지. "
+    "형식: 회사이름: 프로젝트 이름 - 무엇을 만드는지 한 문장. "
+    "주어진 회사만 쓰고, 정보에 없는 회사 사실과 숫자는 쓰지 마세요."
 )
 
 MAX_SKILLS = 5
@@ -155,6 +155,12 @@ def parse_lines(ai_text: str, keys: tuple[str, ...]) -> dict[str, str] | None:
     return {k: fields[k] for k in keys}
 
 
+def parse_named_lines(ai_text: str, names: tuple[str, ...]) -> dict[str, str]:
+    """③ 응답에서 '회사이름: ...' 줄만 꺼낸다. 없는 회사는 빠진다 (코드가 템플릿으로 채운다)."""
+    fields = _clean_lines(ai_text)
+    return {name: fields[name] for name in names if fields.get(name)}
+
+
 def _manwon(won: int) -> str:
     """Same half-up rounding as the money code; never prints -0.0."""
     tenths = round_half_up(abs(won) / 1_000)
@@ -175,9 +181,11 @@ def build_analysis_text(profile: Profile, comparison: dict[str, Any], work: str)
     ])
 
 
-def build_roadmap_text(profile: Profile, picks: list[dict[str, Any]]) -> str:
+def build_roadmap_text(profile: Profile, picks: list[dict[str, Any]],
+                       missing: dict[str, list[str]]) -> str:
+    """`missing` maps project id -> skills the user lacks (computed by code)."""
     lines = [f"사용자 기술: {', '.join(profile.skills) or '없음'}"]
-    for rank, p in enumerate(picks, 1):
-        lines.append(f"{rank}순위 {p['display_name']} ({p['place']}): 업무 {p['work']}, "
-                     f"필요 기술 {', '.join(p['skills'])}")
+    for p in picks:
+        lines.append(f"{p['display_name']}: 업무 {p['work']}, 필요 기술 {', '.join(p['skills'])}, "
+                     f"부족한 기술 {', '.join(missing[p['id']]) or '없음'}")
     return "\n".join(lines)
