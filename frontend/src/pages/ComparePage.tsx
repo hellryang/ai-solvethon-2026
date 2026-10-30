@@ -77,9 +77,9 @@ function CompareDetail({ projectId, profile, isDefaultProfile, picks, projects }
           <h1 className="text-lg font-bold">③ 남는 돈 비교</h1>
         </div>
         {projects && (
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex w-full min-w-0 items-center gap-2 text-sm sm:w-auto">
             <span className="shrink-0 text-muted-foreground">다른 회사</span>
-            <NativeSelect value={projectId} onChange={e => navigate(href.compare(e.target.value))} className="w-auto">
+            <NativeSelect value={projectId} onChange={e => navigate(href.compare(e.target.value))} className="min-w-0 flex-1 sm:w-auto sm:flex-none">
               {projects.map(p => <option key={p.id} value={p.id}>{p.display_name} · {p.work}</option>)}
             </NativeSelect>
           </label>

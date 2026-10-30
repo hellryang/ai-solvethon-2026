@@ -62,7 +62,7 @@ export function HomePage({ intro, onIntroChange, profile, onParsed, picks, proje
           <input
             id="intro" value={intro} maxLength={1000} onChange={e => onIntroChange(e.target.value)}
             placeholder="예: 광주 본가, 차 없음, Java로 웹을 만들어 봤어요"
-            className="h-[50px] min-w-0 flex-1 rounded-[24px] border border-foreground/30 bg-card px-5 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 sm:text-sm"
+            className="h-[50px] w-full min-w-0 rounded-[24px] sm:flex-1 border border-foreground/30 bg-card px-5 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 sm:text-sm"
           />
           <Button type="submit" className="h-[50px] rounded-[24px] px-6 text-base sm:text-sm" disabled={busy || !intro.trim()}>
             {busy ? <Loader2 className="animate-spin" /> : <Sparkles />}
