@@ -1,6 +1,6 @@
 // 남는 돈 비교 화면 틀.
-// 데스크톱(1024px 이상): LinkedIn 피드식 3열 — 왼쪽 내 조건 / 가운데 화면 / 오른쪽 1~3순위·계산 기준 (docs/ui-reference.md §2).
-// 모바일: 심사위원이 폰으로 URL에 접속하므로 앱처럼 한 열 + 하단 탭바. 양옆 열은 내 조건 한 줄 요약과 로드맵 탭이 대신한다.
+// 데스크톱(1024px 이상): 2열 — 가운데 화면 / 오른쪽 목표 회사·계산 기준. 내 조건은 상단 바 '내 프로필'로 옮겼다.
+// 모바일: 심사위원이 폰으로 URL에 접속하므로 앱처럼 한 열 + 하단 탭바. 내 조건 한 줄 요약을 위에 둔다.
 
 import { useEffect, useState } from 'react'
 
@@ -36,6 +36,7 @@ function App() {
   const [aiMode, setAiMode] = useState<AiMode | null>(null)
 
   const [intro, setIntro] = useSessionState('kiroro.intro', '', isString)
+  const [name, setName] = useSessionState('kiroro.name', '', isString)
   const [profile, setProfile] = useSessionState<SavingsProfile>('kiroro.profile', EMPTY_PROFILE, isSavingsProfile)
   const [parseInfo, setParseInfo] = useSessionState<ParseInfo | null>('kiroro.parse', null, isParseInfo)
   const [lastProjectId, setLastProjectId] = useSessionState<string | null>('kiroro.lastProject', null, isNullableString)
@@ -71,6 +72,8 @@ function App() {
 
   const isDefaultProfile = parseInfo === null && profile.skills.length === 0 && profile.home_city === null
   const isTalentPage = route.page === 'talents' || route.page === 'talent' || route.page === 'talent-edit'
+  // 카트 없이 넓게 쓰는 화면: 인재 PR, 계산 기준, 준비 로드맵(화면 안에 담은 회사 목록이 이미 있다)
+  const isWidePage = isTalentPage || route.page === 'sources' || route.page === 'roadmap'
   const nav = { page: route.page, compareHref: href.compare(viewingProjectId ?? lastProjectId), pickCount: picks.ids.length }
 
   function onParsed(result: ParseResponse) {
@@ -85,6 +88,7 @@ function App() {
 
   function reset() {
     setIntro('')
+    setName('')
     setProfile(EMPTY_PROFILE)
     setParseInfo(null)
     picks.clear()
@@ -97,21 +101,17 @@ function App() {
 
   return (
     <div className="min-h-svh">
-      <TopBar {...nav} aiMode={aiMode} />
+      <TopBar
+        {...nav} aiMode={aiMode} profile={profile} skillOptions={data?.skills ?? []}
+        onProfileChange={onProfileChange} onReset={reset} name={name} onNameChange={setName}
+      />
 
       <div
         className={cn(
           'mx-auto grid max-w-[1128px] grid-cols-1 gap-4 px-4 pt-4 pb-[calc(6rem_+_env(safe-area-inset-bottom))] lg:gap-6 lg:py-6',
-          // 인재 PR(기업용) 화면은 구직자용 양옆 열 없이 넓게 쓴다
-          isTalentPage ? 'lg:grid-cols-1' : 'lg:grid-cols-[216px_minmax(0,1fr)_312px]',
+          isWidePage ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1fr)_312px]',
         )}
       >
-        {!isTalentPage && (
-          <aside aria-label="내 조건" className="hidden lg:sticky lg:top-[76px] lg:block lg:self-start">
-            <ConditionCard variant="full" {...conditionProps} />
-          </aside>
-        )}
-
         <main className="min-w-0 space-y-4">
           {dataError && (
             <ErrorBanner>
@@ -164,8 +164,8 @@ function App() {
           </p>
         </main>
 
-        {!isTalentPage && (
-          <aside aria-label="내 순위와 계산 기준" className="hidden space-y-4 lg:sticky lg:top-[76px] lg:block lg:self-start">
+        {!isWidePage && (
+          <aside aria-label="목표 회사와 계산 기준" className="hidden space-y-4 lg:sticky lg:top-[76px] lg:block lg:self-start">
             <PickList profile={profile} picks={picks} />
             <BasisCard assumptions={data?.assumptions ?? null} />
           </aside>

@@ -1,4 +1,5 @@
 // 칩 모양 선택. single: 하나만 (다시 누르면 해제, allowNone일 때), multi: 여러 개.
+// 선택됨: 연한 빨강 배경 + 빨간 테두리 (조건 고치기 창과 같은 모양)
 
 import { cn } from '@/lib/utils'
 
@@ -26,17 +27,19 @@ export function ChoiceChips({ label, options, value, onChange, multiple = false,
   }
 
   return (
-    <div role="group" aria-label={label} className="space-y-2">
-      <p className="text-sm font-semibold">{label}</p>
-      <div className="flex flex-wrap gap-1.5">
+    <div role="group" aria-label={label} className="space-y-2.5">
+      <p className="text-[15px] font-bold text-[#161616]">{label}</p>
+      <div className="flex flex-wrap gap-2">
         {options.map(option => {
           const on = value.includes(option)
           return (
             <button
               key={option} type="button" aria-pressed={on} onClick={() => toggle(option)}
               className={cn(
-                'rounded-full border px-3 py-1.5 text-[13px] transition-colors',
-                on ? 'border-primary bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:text-foreground',
+                'h-9 rounded-full border px-3.5 text-[14px] transition-colors',
+                on
+                  ? 'border-[#D9261C] bg-[#FDEEEC] font-semibold text-[#D9261C]'
+                  : 'border-transparent bg-[#F4F4F4] text-[#555555] hover:bg-[#EAEAEA]',
               )}
             >
               {option}

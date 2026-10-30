@@ -55,10 +55,9 @@ export function HomePage({ intro, onIntroChange, profile, onParsed, picks, proje
   return (
     <>
       <section aria-labelledby="composer-title" className="rounded-xl border bg-card p-4 md:p-5">
-        <h1 id="composer-title" className="text-lg font-bold">남으면, 남는다</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h2 className="text-[22px] font-bold text-foreground">
           연봉이 전부가 아니에요. 한 줄 소개로 내 통장에 남는 돈을 확인해 보세요.
-        </p>
+        </h2>
 
         <form onSubmit={e => void read(e)} className="mt-4 flex flex-col gap-2 sm:flex-row">
           <label htmlFor="intro" className="sr-only">자기소개 한 줄</label>
@@ -170,7 +169,7 @@ function ProjectList({ tab, profile, picks, projects }: ProjectListProps) {
       <EmptyState>
         위에 자기소개를 쓰고 [AI로 읽기]를 누르면 나에게 맞는 3곳이 뜹니다.
         <br />
-        전체·광주·나주·광양 탭에서는 지금 바로 둘러볼 수 있습니다.
+        광주·나주·광양·전체 탭에서는 지금 바로 둘러볼 수 있습니다.
       </EmptyState>
     )
   }
