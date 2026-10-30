@@ -1,0 +1,4 @@
+# 줄바꿈 변환 금지. 운영진 배포 도구(ops/deploy.py)가 requirements.lock·package-lock.json·
+# models.py·database.py의 해시를 서버 원본(LF)과 비교한다. Windows Git의 기본값(autocrlf=true)이
+# CRLF로 바꾸면 해시가 달라져 Check가 "Dependency lock change" 오류로 배포를 거부한다.
+* -text

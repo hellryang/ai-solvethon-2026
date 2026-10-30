@@ -39,7 +39,8 @@ def candidate_files() -> list[Path]:
         encoding="utf-8",
         check=True,
     )
-    return [Path(line) for line in result.stdout.splitlines() if line]
+    # 지웠지만 아직 스테이징하지 않은 파일은 --cached에 남아 있으므로 디스크에 있는 것만 본다
+    return [Path(line) for line in result.stdout.splitlines() if line and Path(line).exists()]
 
 
 def find_problems(path: Path) -> list[str]:
