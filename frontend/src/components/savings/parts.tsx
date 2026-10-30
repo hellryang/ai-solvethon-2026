@@ -44,18 +44,29 @@ export function MetaDivider() {
   return <span aria-hidden className="text-border">|</span>
 }
 
-/** "월 +67.7만원" 배지. 카드에서 가장 먼저 보이는 자리. 양수는 초록, 음수는 빨강 */
+/**
+ * "월 +67.7만원" 금액. 카드에서 가장 먼저 보이는 자리. 배경 없이 글씨로만 보인다.
+ * 양수는 빨강 ▲, 음수는 회색 ▼, 0이면 회색 "서울과 비슷".
+ */
 export function AdvantageBadge({ won }: { won: number }) {
+  if (won === 0) {
+    return <span className="text-[18px] font-bold text-[#7A7A7A]">서울과 비슷</span>
+  }
+  const up = won > 0
+  const text = signedManwon(won)
+  const unit = text.endsWith('만원') ? '만원' : '원'
+  const number = text.slice(0, -unit.length)
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-[2px] px-2 py-0.5 text-[13px] font-bold',
-        won > 0 && 'bg-primary text-primary-foreground',
-        won < 0 && 'bg-destructive text-white',
-        won === 0 && 'bg-muted text-foreground',
+        'inline-flex items-baseline gap-[2px]',
+        up ? 'text-[#D9261C]' : 'text-[#F07A70]',
       )}
     >
-      월 {signedManwon(won)}
+      <span aria-hidden className="mr-[6px] text-[18px] font-extrabold">{up ? '▲' : '▼'}</span>
+      <span className="text-[13px] font-semibold">월</span>
+      <span className="text-[18px] font-extrabold">{number}</span>
+      <span className="text-[13px] font-semibold">{unit}</span>
     </span>
   )
 }
@@ -124,7 +135,7 @@ export function PillTabs<T extends string>({
             key={tab} type="button" role="tab" aria-selected={active} onClick={() => onChange(tab)}
             className={cn(
               'rounded-full border px-4 py-2 text-sm font-medium transition-colors sm:py-1.5',
-              active ? 'border-ink bg-ink text-white' : 'border-border bg-card text-muted-foreground hover:text-foreground',
+              active ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground hover:text-foreground',
             )}
           >
             {tab}

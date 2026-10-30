@@ -52,9 +52,9 @@ export function HomePage({ intro, onIntroChange, profile, onParsed, picks, proje
   return (
     <>
       <section aria-labelledby="composer-title" className="rounded-xl border bg-card p-4 md:p-5">
-        <h1 id="composer-title" className="text-lg font-bold">서울 연봉 말고, 여기서 나에게 남는 돈</h1>
+        <h1 id="composer-title" className="text-lg font-bold">남으면, 남는다</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          자기소개 한 줄이면 AI가 기술과 조건을 읽고, 코드가 전남·광주 공고 12곳과 같은 일 서울 공고의 남는 돈을 계산합니다.
+          자기소개 한 줄이면 프릿지가 읽고, 서울보다 얼마나 더 남는지 계산합니다.
         </p>
 
         <form onSubmit={e => void read(e)} className="mt-4 flex flex-col gap-2 sm:flex-row">

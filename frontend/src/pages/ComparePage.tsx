@@ -5,13 +5,12 @@ import type { ReactNode } from 'react'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 
 import { ErrorBanner, InfoBanner, NativeSelect } from '@/components/common'
-import { AnalysisPanel } from '@/components/savings/AnalysisPanel'
 import { ProjectCard } from '@/components/savings/ProjectCard'
 import { BigStat, StatItem, TwoBar } from '@/components/savings/parts'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { href, navigate } from '@/lib/router'
-import { manwon, messageText, percent, salaryText, signedManwon } from '@/lib/savings'
+import { manwon, messageText, percent, signedManwon } from '@/lib/savings'
 import { useCompares } from '@/lib/useSavings'
 import type { Picks } from '@/lib/useSavings'
 import type { CompareResponse, CumulativeMonths, SavingsBreakdown, SavingsProfile, SavingsProject } from '@/types'
@@ -48,9 +47,9 @@ function ChooseProject({ projects }: { projects: SavingsProject[] | null }) {
               <ul className="mt-2 space-y-1.5">
                 {projects.filter(p => p.place === place).map(p => (
                   <li key={p.id}>
-                    <a href={href.compare(p.id)} className="block rounded-lg border px-3 py-2 hover:bg-muted">
+                    <a href={href.compare(p.id)} className="block h-[76px] overflow-hidden rounded-lg border px-3 py-2 hover:bg-muted">
                       <span className="text-sm font-semibold">{p.display_name}</span>
-                      <span className="block text-xs text-muted-foreground">{p.work}</span>
+                      <span className="block line-clamp-2 text-xs text-muted-foreground">{p.work}</span>
                     </a>
                   </li>
                 ))}
@@ -109,7 +108,6 @@ function CompareDetail({ projectId, profile, isDefaultProfile, picks, projects }
           <Summary result={result} />
           <Breakdown jeonnam={result.jeonnam} seoul={result.seoul} />
           <CumulativeBars result={result} />
-          <AnalysisPanel key={JSON.stringify(profile)} profile={profile} projectId={projectId} />
           <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
             <Button asChild variant="outline">
               <a href={href.home}><ArrowLeft /> 다른 추천 보기</a>
@@ -144,21 +142,30 @@ function Summary({ result }: { result: CompareResponse }) {
   )
 }
 
+/** 원 → 만원 숫자만 (단위 글자 없이). 0이면 0 */
+function num(won: number): string {
+  if (won === 0) return '0'
+  return (won / 10000).toLocaleString('ko-KR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+}
+
 /** 남는 돈이 어디서 나왔는지. 한 줄 공식 그대로 위에서 아래로 더하고 뺀다 (docs/calc-criteria.md §1) */
 function Breakdown({ jeonnam, seoul }: { jeonnam: SavingsBreakdown; seoul: SavingsBreakdown }) {
   const rows: { label: string; pick: (b: SavingsBreakdown) => ReactNode; strong?: boolean }[] = [
-    { label: '연봉 (공고 하한)', pick: b => salaryText(b.salary_floor_manwon) },
-    { label: '월 실수령액', pick: b => manwon(b.net_pay) },
-    { label: '− 월세', pick: b => `${manwon(b.rent)} (${b.housing})` },
-    { label: '− 교통비', pick: b => `${manwon(b.transit)} (${b.transit_label})` },
-    { label: '− 생활비', pick: b => manwon(b.living_cost) },
-    { label: '− 자차 보험·세금', pick: b => manwon(b.car_fixed) },
+    { label: '연봉 (공고 하한)', pick: b => b.salary_floor_manwon.toLocaleString('ko-KR') },
+    { label: '월 실수령액', pick: b => num(b.net_pay) },
+    { label: '− 월세', pick: b => `${num(b.rent)} (${b.housing})` },
+    { label: '− 교통비', pick: b => `${num(b.transit)} (${b.transit_label})` },
+    { label: '− 생활비', pick: b => num(b.living_cost) },
+    { label: '− 자차 보험·세금', pick: b => num(b.car_fixed) },
     { label: '+ 월세 지원금', pick: b => subsidyText(b) },
-    { label: '= 월 남는 돈', pick: b => manwon(b.savings), strong: true },
+    { label: '= 월 남는 돈', pick: b => num(b.savings), strong: true },
   ]
   return (
     <section aria-labelledby="breakdown-title" className="rounded-xl border bg-card p-5">
-      <h2 id="breakdown-title" className="text-base font-semibold">남는 돈은 어디서 나왔나</h2>
+      <div className="flex items-baseline justify-between gap-2">
+        <h2 id="breakdown-title" className="text-base font-semibold">남는 돈은 어디서 나왔나</h2>
+        <span className="text-xs text-muted-foreground">단위: 만원</span>
+      </div>
       <p className="mt-0.5 text-xs text-muted-foreground">서울과 전남·광주에 같은 공식을 씁니다. 금액은 1년차 월 기준입니다.</p>
       <Table className="mt-3">
         <TableHeader>
@@ -190,7 +197,7 @@ function Breakdown({ jeonnam, seoul }: { jeonnam: SavingsBreakdown; seoul: Savin
 
 function subsidyText(b: SavingsBreakdown): string {
   if (!b.subsidy) return '없음'
-  return `${manwon(b.subsidy.monthly)} (${b.subsidy.name}, ${b.subsidy.months}개월 · ${b.subsidy.selection})`
+  return `${num(b.subsidy.monthly)} (${b.subsidy.name}, ${b.subsidy.months}개월 · ${b.subsidy.selection})`
 }
 
 const PERIODS: { months: CumulativeMonths; label: string }[] = [

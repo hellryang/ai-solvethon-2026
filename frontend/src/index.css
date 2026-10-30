@@ -11,27 +11,27 @@
  * Vite 시작 템플릿(#root 1126px·가운데 정렬, h1 56px, 다크 모드 보라 강조)은 Tailwind보다 우선 적용돼 지웠다 (§0).
  */
 :root {
-  --background: #F5F6F4;
-  --foreground: rgb(0 0 0 / 0.88);
+  --background: #FFFFFF;
+  --foreground: #161616;
   --card: #FFFFFF;
-  --card-foreground: rgb(0 0 0 / 0.88);
+  --card-foreground: #161616;
   --popover: #FFFFFF;
-  --popover-foreground: rgb(0 0 0 / 0.88);
-  --primary: #0F7B5F;
+  --popover-foreground: #161616;
+  --primary: #D9261C;
   --primary-foreground: #FFFFFF;
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: rgb(0 0 0 / 0.56);
-  --accent: #E8F4EF;
-  --accent-foreground: #0F7B5F;
-  --destructive: #E5484D;
-  --border: #E2E4E0;
-  --input: #E2E4E0;
-  --ring: #0F7B5F;
-  /* 어두운 면: 활성 알약 탭과 AI 해석 영역 */
-  --ink: #2A2B2E;
-  --ink-deep: #1B1C1E;
+  --secondary: #F5F5F5;
+  --secondary-foreground: #161616;
+  --muted: #F5F5F5;
+  --muted-foreground: #7A7A7A;
+  --accent: #FDEEEC;
+  --accent-foreground: #D9261C;
+  --destructive: #D9261C;
+  --border: #ECECEC;
+  --input: #F5F5F5;
+  --ring: #D9261C;
+  /* AI 해석 영역·보조 면: 연한 회색 바탕 (어두운 면 X) */
+  --ink: #F5F5F5;
+  --ink-deep: #F5F5F5;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -51,7 +51,7 @@
 @theme inline {
   --font-heading: var(--font-sans);
   /* Geist에는 한글 글리프가 없어 한글은 시스템 한글 폰트로 넘긴다 (새 폰트 패키지 없음) */
-  --font-sans: 'Geist Variable', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+  --font-sans: 'Pretendard Variable', Pretendard, 'Geist Variable', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -140,12 +140,14 @@
   /* AI 해석 영역만 어두운 면으로 구분한다. 코드가 계산한 숫자는 밝은 카드에 둔다 (docs/ui-reference.md §1 ②) */
   .ai-surface {
     background: var(--ink-deep);
-    color: #F3F4F6;
+    color: #161616;
+    border: 1px solid var(--border);
     border-radius: 24px;
   }
 
   .ai-surface-card {
-    background: var(--ink);
+    background: #FFFFFF;
+    border: 1px solid var(--border);
     border-radius: 12px;
   }
 }

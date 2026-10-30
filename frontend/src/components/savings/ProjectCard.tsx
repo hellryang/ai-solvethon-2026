@@ -47,11 +47,13 @@ export function ProjectCard({ result, rank, picked, pickDisabled, onTogglePick, 
         </Button>
       </div>
 
-      <h3 id={titleId} className="mt-3 text-lg font-bold leading-snug">
-        <span className="text-muted-foreground">
+      <h3 id={titleId} className="mt-3 text-lg leading-snug">
+        <span style={{ color: '#161616', fontWeight: 700 }}>
           [{project.skills[0]}/{project.place}/{salaryText(project.salary_floor_manwon)}]
         </span>{' '}
-        {project.display_name}
+        <span style={{ color: '#7A7A7A', fontWeight: 500 }}>
+          {project.display_name}
+        </span>
       </h3>
       <p className="mt-1 text-sm text-muted-foreground">{project.work}</p>
 
@@ -78,11 +80,12 @@ export function ProjectCard({ result, rank, picked, pickDisabled, onTogglePick, 
 
       {showDetail && (
         <div className="mt-4 flex justify-end">
-          <Button asChild size="lg" className="h-11 w-full sm:h-9 sm:w-auto">
-            <a href={href.compare(project.id)}>
-              남는 돈 자세히 <ArrowRight />
-            </a>
-          </Button>
+          <a
+            href={href.compare(project.id)}
+            className="inline-flex items-center gap-1 text-[14px] text-[#7A7A7A] transition-colors hover:text-[#161616]"
+          >
+            남는 돈 자세히 <ArrowRight className="size-4" />
+          </a>
         </div>
       )}
     </article>

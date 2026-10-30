@@ -37,9 +37,9 @@ export function AnalysisPanel({ profile, projectId }: AnalysisPanelProps) {
     <section aria-labelledby="ai-title" className="ai-surface p-6 md:p-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold text-white/60">AI 해석</p>
+          <p className="text-xs font-semibold text-muted-foreground">AI 해석</p>
           <h2 id="ai-title" className="mt-1 text-xl font-bold">나에게 맞는 점과 아쉬운 점</h2>
-          <p className="mt-1 text-sm text-white/60">
+          <p className="mt-1 text-sm text-muted-foreground">
             금액은 위에서 코드가 계산했습니다. AI는 그 숫자만 인용하고, 금액 밖의 이유를 씁니다.
           </p>
         </div>
@@ -49,9 +49,9 @@ export function AnalysisPanel({ profile, projectId }: AnalysisPanelProps) {
         </Button>
       </div>
 
-      {busy && <p role="status" className="mt-4 text-sm text-white/70">AI가 분석하는 중입니다…</p>}
+      {busy && <p role="status" className="mt-4 text-sm text-muted-foreground">AI가 분석하는 중입니다…</p>}
       {error && (
-        <p role="alert" className="mt-4 rounded-lg bg-white/10 p-3 text-sm text-red-200">
+        <p role="alert" className="mt-4 rounded-lg bg-accent p-3 text-sm text-destructive">
           {error} 버튼을 다시 눌러 주세요. 자동으로 다시 부르지 않습니다.
         </p>
       )}
@@ -59,7 +59,7 @@ export function AnalysisPanel({ profile, projectId }: AnalysisPanelProps) {
       <div className="mt-6 grid gap-3 md:grid-cols-3">
         {KEYS.map(key => (
           <div key={key} className="ai-surface-card p-4">
-            <p className="text-xs font-semibold text-white/60">{key}</p>
+            <p className="text-xs font-semibold text-muted-foreground">{key}</p>
             <p className="mt-2 text-sm leading-6">
               {result?.lines?.[key] ?? (result ? '—' : '[분석 보기]를 누르면 채워집니다.')}
             </p>
@@ -69,7 +69,7 @@ export function AnalysisPanel({ profile, projectId }: AnalysisPanelProps) {
 
       {result && !result.lines && (
         <div className="ai-surface-card mt-3 p-4">
-          <p className="text-xs text-white/60">
+          <p className="text-xs text-muted-foreground">
             AI 응답이 정해진 3줄 형식이 아니어서 원문을 그대로 보여 줍니다
             {result.mode === 'mock' && ' (로컬 모의 응답 · 실제 AI 결과는 팀 서버에서 확인)'}.
           </p>

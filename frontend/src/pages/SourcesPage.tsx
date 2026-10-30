@@ -9,6 +9,19 @@ import { href } from '@/lib/router'
 import { manwon, SOURCE_LABELS } from '@/lib/savings'
 import type { SavingsData } from '@/types'
 
+/** 항목별 짧은 출처 한 줄. 긴 설명은 각 카드의 <details>에 접어 둔다. */
+const SHORT_SOURCE: Record<string, string> = {
+  rent: '국토교통부 실거래가 · 중앙값',
+  net_pay: '2026 연봉별 실수령액표',
+  living: '국가데이터처 1인 가구 통계',
+  transit: '지역별 버스·지하철 요금',
+  commute_gj_naju: '나주 BIS 요금표',
+  distance: '네이버지도 길찾기',
+  car_insurance: '보험개발원',
+  car_tax: '지방세법',
+  fuel: '오피넷',
+}
+
 export function SourcesPage({ data }: { data: SavingsData | null }) {
   if (!data) return <p role="status" className="text-sm text-muted-foreground">계산 기준을 불러오는 중…</p>
 
@@ -20,14 +33,21 @@ export function SourcesPage({ data }: { data: SavingsData | null }) {
         <p className="mt-1 text-sm text-muted-foreground">
           금액은 모두 코드가 같은 공식으로 계산합니다. AI는 숫자를 만들지 않고, 코드가 넘긴 숫자만 인용합니다.
         </p>
-        <dl className="mt-4 divide-y">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {Object.entries(data.sources).map(([key, text]) => (
-            <div key={key} className="grid gap-1 py-2.5 sm:grid-cols-[8rem_1fr]">
-              <dt className="text-sm font-semibold">{SOURCE_LABELS[key] ?? key}</dt>
-              <dd className="text-sm text-muted-foreground">{text}</dd>
-            </div>
+            <details key={key} className="group h-full rounded-xl border border-[#ECECEC] bg-white p-4">
+              <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                <span className="text-[15px] font-bold text-[#161616] decoration-[1.5px] underline-offset-[3px] hover:underline">
+                  {SOURCE_LABELS[key] ?? key}
+                </span>
+                {SHORT_SOURCE[key] && (
+                  <span className="mt-1 block text-[13px] text-[#7A7A7A]">{SHORT_SOURCE[key]}</span>
+                )}
+              </summary>
+              <p className="mt-3 border-t border-[#ECECEC] pt-3 text-[12px] leading-[1.6] text-[#7A7A7A]">{text}</p>
+            </details>
           ))}
-        </dl>
+        </div>
       </section>
 
       <section aria-labelledby="assumptions-title" className="rounded-xl border bg-card p-5">
