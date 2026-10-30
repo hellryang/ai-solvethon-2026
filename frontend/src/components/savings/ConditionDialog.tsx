@@ -99,9 +99,12 @@ interface ConditionDialogProps {
   onChange: (next: SavingsProfile) => void
   /** 자기소개·조건·담은 회사를 모두 지우고 처음 화면으로 */
   onReset: () => void
+    /** 이름(화면에만 저장). 넘기지 않으면 이름 칸을 숨긴다 */
+  name?: string
+  onNameChange?: (next: string) => void
 }
 
-export function ConditionDialog({ open, onOpenChange, profile, skillOptions, onChange, onReset }: ConditionDialogProps) {
+export function ConditionDialog({ open, onOpenChange, profile, skillOptions, onChange, onReset, name, onNameChange }: ConditionDialogProps) {
   const [addOpen, setAddOpen] = useState(false)
   const extendedOptions = skillOptions.filter(skill => !profile.skills.includes(skill))
   const skillsFull = profile.skills.length >= MAX_SKILLS
@@ -129,8 +132,18 @@ export function ConditionDialog({ open, onOpenChange, profile, skillOptions, onC
           </DialogDescription>
         </DialogHeader>
 
+        {onNameChange && (
+          <div className="mt-2">
+            <label htmlFor="cond-name" className="mb-2.5 block text-[15px] font-bold text-[#161616]">이름</label>
+            <input
+              id="cond-name" value={name ?? ''} maxLength={20} placeholder="예: 신희수"
+              onChange={e => onNameChange(e.target.value)}
+              className="h-11 w-full rounded-[10px] border border-[#E2E2E2] px-3.5 text-base outline-none focus:border-[#D9261C] sm:text-sm"
+            />
+          </div>
+        )}
         {/* 조건 4개 */}
-        <div className="mt-2 grid gap-x-5 gap-y-4 sm:grid-cols-2">
+        <div className="mt-4 grid gap-x-5 gap-y-4 sm:grid-cols-2">
           <div>
             <label htmlFor="cond-city" className="mb-2.5 block text-[15px] font-bold text-[#161616]">거주 시군</label>
             <NativeSelect

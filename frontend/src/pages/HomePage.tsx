@@ -55,10 +55,9 @@ export function HomePage({ intro, onIntroChange, profile, onParsed, picks, proje
   return (
     <>
       <section aria-labelledby="composer-title" className="rounded-xl border bg-card p-4 md:p-5">
-        <h1 id="composer-title" className="text-lg font-bold">남으면, 남는다</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          자기소개 한 줄이면 프릿지가 읽고, 서울보다 얼마나 더 남는지 계산합니다.
-        </p>
+        <h2 className="text-[22px] font-bold text-foreground">
+          자기소개 한 줄이면, 서울보다 얼마나 더 남는지 알려드려요
+        </h2>
 
         <form onSubmit={e => void read(e)} className="mt-4 flex flex-col gap-2 sm:flex-row">
           <label htmlFor="intro" className="sr-only">자기소개 한 줄</label>
@@ -160,15 +159,15 @@ function ProjectList({ tab, profile, picks, projects }: ProjectListProps) {
   // 이 목록은 상주 탭 전용이다. 재택 공고가 들어오면 재택 탭에서 따로 보여 준다
   const ids = isRecommend
     ? (recommend.data ?? []).filter(item => item.project.work_mode === '상주').map(item => item.project.id)
-    : (projects ?? []).filter(project => project.place === tab && project.work_mode === '상주').map(project => project.id)
-  const compares = useCompares(profile, ids)
+    : (projects ?? []).filter(project => (tab === '전체' || project.place === tab) && project.work_mode === '상주').map(project => project.id)  
+    const compares = useCompares(profile, ids)
 
   if (isRecommend && profile.skills.length === 0) {
     return (
       <EmptyState>
         위에 자기소개를 쓰고 [AI로 읽기]를 누르면 나에게 맞는 3곳이 뜹니다.
         <br />
-        광주·나주·광양 탭에서는 지금 바로 둘러볼 수 있습니다.
+        광주·나주·광양·전체 탭에서는 지금 바로 둘러볼 수 있습니다.
       </EmptyState>
     )
   }

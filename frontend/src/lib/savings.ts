@@ -53,7 +53,7 @@ export const EXAMPLE_INTROS: { label: string; intro: string }[] = [
 export const CITY_OPTIONS = ['광주', '나주', '광양', '순천', '여수', '목포', '담양', '화순', '서울'] as const
 
 /** 추천 목록의 알약 탭. 추천 = 상위 3곳, 나머지는 그 지역 공고 4곳 */
-export const LIST_TABS = ['추천 3곳', '광주', '나주', '광양'] as const
+export const LIST_TABS = ['추천 3곳', '전체', '광주', '나주', '광양'] as const
 export type ListTab = (typeof LIST_TABS)[number]
 
 export const MAX_SKILLS = 5
