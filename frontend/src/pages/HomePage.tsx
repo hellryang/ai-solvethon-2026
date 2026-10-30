@@ -57,7 +57,7 @@ export function HomePage({ intro, onIntroChange, profile, onParsed, picks, proje
       <section aria-labelledby="composer-title" className="rounded-xl border bg-card p-4 md:p-5">
         <h1 id="composer-title" className="text-lg font-bold">남으면, 남는다</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          자기소개 한 줄이면 프릿지가 읽고, 서울보다 얼마나 더 남는지 계산합니다.
+          연봉이 전부가 아니에요. 한 줄 소개로 내 통장에 남는 돈을 확인해 보세요.
         </p>
 
         <form onSubmit={e => void read(e)} className="mt-4 flex flex-col gap-2 sm:flex-row">
@@ -131,7 +131,7 @@ export function HomePage({ intro, onIntroChange, profile, onParsed, picks, proje
           <>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 id="list-title" className="text-base font-semibold">
-                {tab === '추천 3곳' ? '나에게 맞는 전남·광주 공고' : `${tab} 공고`}
+                {tab === '추천 3곳' ? '나에게 맞는 전남·광주 공고' : tab === '전체' ? '전남·광주 전체 공고' : `${tab} 공고`}
               </h2>
               <PillTabs tabs={LIST_TABS} value={tab} onChange={setTab} label="공고 목록 보기" />
             </div>
@@ -153,14 +153,16 @@ interface ProjectListProps {
   projects: SavingsProject[] | null
 }
 
-/** 추천 탭은 상위 3곳(순위순), 지역 탭은 그 지역 공고를 월 남는 돈 차이가 큰 순으로 보여 준다 */
+/** 추천 탭은 상위 3곳(순위순), 전체·지역 탭은 해당 공고를 월 남는 돈 차이가 큰 순으로 보여 준다 */
 function ProjectList({ tab, profile, picks, projects }: ProjectListProps) {
   const isRecommend = tab === '추천 3곳'
   const recommend = useRecommend(profile)
   // 이 목록은 상주 탭 전용이다. 재택 공고가 들어오면 재택 탭에서 따로 보여 준다
   const ids = isRecommend
     ? (recommend.data ?? []).filter(item => item.project.work_mode === '상주').map(item => item.project.id)
-    : (projects ?? []).filter(project => project.place === tab && project.work_mode === '상주').map(project => project.id)
+    : (projects ?? [])
+      .filter(project => (tab === '전체' || project.place === tab) && project.work_mode === '상주')
+      .map(project => project.id)
   const compares = useCompares(profile, ids)
 
   if (isRecommend && profile.skills.length === 0) {
@@ -168,7 +170,7 @@ function ProjectList({ tab, profile, picks, projects }: ProjectListProps) {
       <EmptyState>
         위에 자기소개를 쓰고 [AI로 읽기]를 누르면 나에게 맞는 3곳이 뜹니다.
         <br />
-        광주·나주·광양 탭에서는 지금 바로 둘러볼 수 있습니다.
+        전체·광주·나주·광양 탭에서는 지금 바로 둘러볼 수 있습니다.
       </EmptyState>
     )
   }
