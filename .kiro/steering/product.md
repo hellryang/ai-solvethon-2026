@@ -60,6 +60,8 @@ inclusion: always
 ## 공통 스타터 제약
 
 - AI는 공통 `generate_text`(`backend/app/ai_service.py`)만 쓴다. 응답 최대 256토큰, instruction 최대 300자, text 최대 4,000자, 서버당 분당 20회·하루 600회
+- **모델은 `global.anthropic.claude-sonnet-4-6`을 명시한다.** Sonnet 5·5.5는 공통 코드가 보내는 temperature를 거부해 서버에서 502가 나고, 로컬 mock에서는 이 오류가 보이지 않는다 (검증 기록: `.kiro/specs/net-savings-match/verification.md`)
+- 거주지가 본가인지와 프로젝트 근무지로 출퇴근이 되는지는 **코드가 판단**한다. AI는 거주 시군과 본가·자취만 뽑는다
 - AI 출력은 JSON이 아니라 **줄 단위 텍스트**(`기술: ...`)로 받고, 코드가 파싱한다. 기술 사전에 없는 기술은 코드가 거른다
 - AI는 버튼을 누를 때만 부른다. 실패하면 오류 메시지와 [다시 시도] 버튼을 보여 준다. ① 추출이 실패하면 키워드 매칭으로 대체한다
 - 로컬 AI는 mock이다. 실제 품질은 팀 서버에 배포한 뒤 확인한다
