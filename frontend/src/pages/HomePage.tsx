@@ -56,7 +56,7 @@ export function HomePage({ intro, onIntroChange, profile, onParsed, picks, proje
     <>
       <section aria-labelledby="composer-title" className="rounded-xl border bg-card p-4 md:p-5">
         <h2 className="text-[22px] font-bold text-foreground">
-          연봉이 전부가 아니에요. 한 줄 소개로 내 통장에 남는 돈을 확인해 보세요.
+          자기소개 한 줄이면, 얼마나 더 남는지 알려드려요
         </h2>
 
         <form onSubmit={e => void read(e)} className="mt-4 flex flex-col gap-2 sm:flex-row">
