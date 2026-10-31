@@ -40,9 +40,17 @@ export function MetaItem({ label, value, title }: { label: string; value: ReactN
   )
 }
 
+/** 폰에서는 메타가 두 칸씩 줄바꿈되므로 구분선을 숨긴다 (줄 끝에 '|'만 남는 것 방지) */
 export function MetaDivider() {
-  return <span aria-hidden className="text-border">|</span>
+  return <span aria-hidden className="hidden text-border sm:inline">|</span>
 }
+
+/**
+ * 칩·탭 줄. 폰(640px 미만)에서는 한 줄 가로 스크롤(앱의 필터 줄처럼), 그 이상에서는 줄바꿈.
+ * 가로로 넘친 칩이 한 개만 아랫줄에 떨어지는 것을 막는다.
+ */
+export const mobileScrollRow =
+  'flex flex-nowrap gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-visible'
 
 /**
  * "월 +67.7만원" 금액. 카드에서 가장 먼저 보이는 자리. 배경 없이 글씨로만 보인다.
@@ -151,14 +159,14 @@ export function PillTabs<T extends string>({
   label: string
 }) {
   return (
-    <div role="tablist" aria-label={label} className="flex flex-wrap gap-2">
+    <div role="tablist" aria-label={label} className={cn(mobileScrollRow, 'w-full sm:w-auto')}>
       {tabs.map(tab => {
         const active = tab === value
         return (
           <button
             key={tab} type="button" role="tab" aria-selected={active} onClick={() => onChange(tab)}
             className={cn(
-              'rounded-full border px-4 py-2 text-sm font-medium transition-colors sm:py-1.5',
+              'shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors sm:py-1.5',
               active ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground hover:text-foreground',
             )}
           >

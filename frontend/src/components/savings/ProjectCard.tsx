@@ -6,6 +6,7 @@ import { ArrowRight, Check, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { href } from '@/lib/router'
 import { manwon, salaryText } from '@/lib/savings'
+import { cn } from '@/lib/utils'
 import type { CompareResponse } from '@/types'
 import { AdvantageBadge, FitBar, MetaDivider, MetaItem, SkillTag } from './parts'
 
@@ -39,16 +40,9 @@ export function ProjectCard({ result, rank, picked, pickDisabled, onTogglePick, 
         <FitBar score={fit.score} />
       </div>
 
-      {/* 비교에 담기 */}
-      <div className="mt-3">
-        <Button
-          type="button" size="sm" variant={picked ? 'default' : 'outline'} className="h-9 rounded-full sm:h-8"
-          aria-pressed={picked} disabled={!picked && pickDisabled} onClick={onTogglePick}
-          title={!picked && pickDisabled ? '최대 3곳까지 담을 수 있습니다' : undefined}
-        >
-          {picked ? <Check /> : <Plus />}
-          {picked ? '카트에 담음' : '카트에 담기'}
-        </Button>
+      {/* 비교에 담기 (640px 이상). 폰에서는 카드 맨 아래 버튼 줄로 옮긴다 */}
+      <div className="mt-3 hidden sm:block">
+        <CartButton picked={picked} pickDisabled={pickDisabled} onTogglePick={onTogglePick} className="h-8" />
       </div>
 
       <h3 id={titleId} className="mt-3 text-lg leading-snug">
@@ -69,7 +63,8 @@ export function ProjectCard({ result, rank, picked, pickDisabled, onTogglePick, 
         ))}
       </ul>
 
-      <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-3">
+      {/* 메타 4칸: 폰에서는 2×2 칸, 그 이상에서는 한 줄 + 구분선 */}
+      <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-1.5 border-t pt-3 sm:flex sm:flex-wrap sm:items-center sm:gap-y-1">
         <MetaItem label="지역" value={project.place} />
         <MetaDivider />
         <MetaItem
@@ -83,7 +78,7 @@ export function ProjectCard({ result, rank, picked, pickDisabled, onTogglePick, 
       </div>
 
       {showDetail && (
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 hidden justify-end sm:flex">
           <a
             href={href.compare(project.id)}
             className="inline-flex items-center gap-1 text-[14px] text-[#7A7A7A] transition-colors hover:text-[#161616]"
@@ -92,6 +87,37 @@ export function ProjectCard({ result, rank, picked, pickDisabled, onTogglePick, 
           </a>
         </div>
       )}
+
+      {/* 폰: 엄지로 누르기 쉬운 높이 44px 버튼 두 개를 카드 맨 아래에 나란히 */}
+      <div className={cn('mt-4 grid gap-2 sm:hidden', showDetail ? 'grid-cols-2' : 'grid-cols-1')}>
+        <CartButton picked={picked} pickDisabled={pickDisabled} onTogglePick={onTogglePick} className="h-11 w-full" />
+        {showDetail && (
+          <a
+            href={href.compare(project.id)}
+            className="inline-flex h-11 items-center justify-center gap-1 rounded-full bg-[#161616] text-sm font-semibold text-white"
+          >
+            남는 돈 자세히 <ArrowRight className="size-4" />
+          </a>
+        )}
+      </div>
     </article>
+  )
+}
+
+function CartButton({ picked, pickDisabled, onTogglePick, className }: {
+  picked: boolean
+  pickDisabled: boolean
+  onTogglePick: () => void
+  className?: string
+}) {
+  return (
+    <Button
+      type="button" size="sm" variant={picked ? 'default' : 'outline'} className={cn('rounded-full', className)}
+      aria-pressed={picked} disabled={!picked && pickDisabled} onClick={onTogglePick}
+      title={!picked && pickDisabled ? '최대 3곳까지 담을 수 있습니다' : undefined}
+    >
+      {picked ? <Check /> : <Plus />}
+      {picked ? '카트에 담음' : '카트에 담기'}
+    </Button>
   )
 }
