@@ -6,7 +6,7 @@ import { Loader2, Sparkles } from 'lucide-react'
 
 import { EmptyState, ErrorBanner } from '@/components/common'
 import { ProjectCard } from '@/components/savings/ProjectCard'
-import { PillTabs } from '@/components/savings/parts'
+import { mobileScrollRow, PillTabs } from '@/components/savings/parts'
 import { Button } from '@/components/ui/button'
 import { errorMessage } from '@/lib/api'
 import { EXAMPLE_INTROS, LIST_TABS, parseIntro } from '@/lib/savings'
@@ -72,12 +72,12 @@ export function HomePage({ intro, onIntroChange, profile, onParsed, picks, proje
           </Button>
         </form>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted-foreground">예시</span>
+        <div className={cn(mobileScrollRow, 'mt-3 items-center')}>
+          <span className="shrink-0 text-xs text-muted-foreground">예시</span>
           {EXAMPLE_INTROS.map(example => (
             <button
               key={example.label} type="button" onClick={() => onIntroChange(example.intro)}
-              className="rounded-full border px-3 py-2 text-[13px] hover:bg-muted sm:py-1"
+              className="shrink-0 rounded-full border px-3 py-2 text-[13px] hover:bg-muted sm:py-1"
             >
               {example.label}
             </button>

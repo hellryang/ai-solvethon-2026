@@ -43,7 +43,7 @@ export function ConditionCard({ variant, profile, parseInfo, skillOptions, onCha
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs text-muted-foreground">내 조건 · {sourceText}</p>
           <p className="truncate text-sm font-semibold">
-            {profile.home_city ?? '거주 모름'} {profile.housing} · 차 {profile.has_car ? '있음' : '없음'} · {profile.work_mode}
+            {residenceText(profile.home_city, profile.housing)} · 차 {profile.has_car ? '있음' : '없음'} · {profile.work_mode}
             {profile.skills.length > 0 && ` · ${profile.skills.join(', ')}`}
           </p>
         </div>
@@ -79,6 +79,12 @@ export function ConditionCard({ variant, profile, parseInfo, skillOptions, onCha
       {dialog}
     </section>
   )
+}
+
+/** "광주 본가" / "거주 모름" ("모름 모름"처럼 같은 말이 두 번 나오지 않게) */
+function residenceText(city: string | null, housing: string): string {
+  if (!city) return housing === '모름' ? '거주 모름' : housing
+  return housing === '모름' ? city : `${city} ${housing}`
 }
 
 function Row({ label, children }: { label: string; children: ReactNode }) {

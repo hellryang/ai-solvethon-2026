@@ -2,7 +2,7 @@
 // 로드맵에는 이 두 가지만 넣는다 (10/30 결정). 부족한 능력·자격증·개월은 코드가 정하고, 프로젝트 이름만 AI가 쓴다.
 
 import { useState } from 'react'
-import { GripVertical, Loader2, Sparkles, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, GripVertical, Loader2, Sparkles, X } from 'lucide-react'
 import { EmptyState, ErrorBanner } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { errorMessage } from '@/lib/api'
@@ -42,7 +42,10 @@ export function RoadmapPage({ profile, picks }: { profile: SavingsProfile; picks
         <h1 id="roadmap-title" className="text-lg font-bold">④ 준비 로드맵</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           마음에 드는 회사를 담으면 부족한 능력을 찾고, 필요 자격증과 회사별 프로젝트를 개월 순서로 짜 줍니다.
-          순서가 곧 순위입니다. ⠿를 끌어서 순위를 바꿀 수 있어요.
+          순서가 곧 순위입니다.
+          {/* HTML 끌기는 터치 화면에서 동작하지 않아, 손가락 화면에서는 ▲▼ 버튼으로 안내한다 */}
+          <span className="pointer-coarse:hidden"> ⠿를 끌어서 순위를 바꿀 수 있어요.</span>
+          <span className="hidden pointer-coarse:inline"> ▲▼를 눌러 순위를 바꿀 수 있어요.</span>
         </p>
 
         {picks.ids.length === 0 ? (
@@ -87,7 +90,7 @@ export function RoadmapPage({ profile, picks }: { profile: SavingsProfile; picks
                   } ${isOver ? 'border-[#D9261C] bg-[#FDEEEC]' : 'border-[#ECECEC]'}`}
                 >
                   <span
-                    className="flex h-8 w-6 shrink-0 cursor-grab items-center justify-center rounded-md text-[#9A9A9A] hover:bg-[#F4F4F4] active:cursor-grabbing"
+                    className="flex h-8 w-6 shrink-0 cursor-grab items-center justify-center rounded-md text-[#9A9A9A] hover:bg-[#F4F4F4] active:cursor-grabbing pointer-coarse:hidden"
                     title="끌어서 순위 바꾸기" aria-hidden
                   >
                     <GripVertical className="size-4" />
@@ -97,8 +100,25 @@ export function RoadmapPage({ profile, picks }: { profile: SavingsProfile; picks
                     {name}
                     {result && <span className="font-normal text-muted-foreground"> · {result.project.work}</span>}
                   </a>
-                  
-                  <Button type="button" size="icon-xs" variant="ghost" aria-label={`${name} 빼기`} onClick={() => picks.remove(id)}>
+                  {/* 터치 화면 전용 순위 버튼 (마우스 화면은 끌기를 쓴다) */}
+                  <span className="hidden shrink-0 gap-1 pointer-coarse:flex">
+                    <Button
+                      type="button" size="icon" variant="outline" className="size-9" disabled={index === 0}
+                      aria-label={`${name} 순위 올리기`} onClick={() => moveTo(id, index - 1)}
+                    >
+                      <ChevronUp />
+                    </Button>
+                    <Button
+                      type="button" size="icon" variant="outline" className="size-9" disabled={index === picks.ids.length - 1}
+                      aria-label={`${name} 순위 내리기`} onClick={() => moveTo(id, index + 1)}
+                    >
+                      <ChevronDown />
+                    </Button>
+                  </span>
+                  <Button
+                    type="button" size="icon-xs" variant="ghost" className="pointer-coarse:size-9"
+                    aria-label={`${name} 빼기`} onClick={() => picks.remove(id)}
+                  >
                     <X />
                   </Button>
                 </li>

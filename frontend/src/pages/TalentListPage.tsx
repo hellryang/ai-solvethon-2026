@@ -4,6 +4,7 @@
 import { Fragment, useState } from 'react'
 import { ChevronRight, Pencil, Plus, RotateCcw, Search } from 'lucide-react'
 import { EmptyState, ErrorBanner } from '@/components/common'
+import { mobileScrollRow } from '@/components/savings/parts'
 import { PhotoTile, TalentCard } from '@/components/talents/TalentCard'
 import { Button } from '@/components/ui/button'
 import { href } from '@/lib/router'
@@ -61,12 +62,13 @@ export function TalentListPage() {
           />
         </form>
 
-        {/* 필터: 검색창 아래 한 줄. 묶음 사이는 세로선으로 나눈다. 다시 누르면 해제 */}
-        <div className="flex flex-wrap items-center gap-2" aria-label="필터">
+        {/* 필터: 검색창 아래 한 줄. 묶음 사이는 세로선으로 나눈다. 다시 누르면 해제.
+            폰에서는 한 줄 가로 스크롤 (줄 끝에 세로선만 남는 것 방지) */}
+        <div className={cn(mobileScrollRow, 'items-center')} aria-label="필터">
           {GROUPS.map((group, gi) => (
             <Fragment key={group.key}>
-              {gi > 0 && <span aria-hidden className="mx-1 h-5 w-px bg-[#E6E6E6]" />}
-              <div role="group" aria-label={group.label} className="flex flex-wrap gap-2">
+              {gi > 0 && <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-[#E6E6E6]" />}
+              <div role="group" aria-label={group.label} className="flex shrink-0 gap-2 sm:flex-wrap">
                 {group.options.map(option => {
                   const on = filters[group.key] === option
                   return (
@@ -87,7 +89,7 @@ export function TalentListPage() {
           ))}
           <button
             type="button" onClick={reset}
-            className="ml-auto inline-flex items-center gap-1 text-[13px] text-muted-foreground hover:text-foreground"
+            className="ml-auto inline-flex shrink-0 items-center gap-1 text-[13px] text-muted-foreground hover:text-foreground"
           >
             <RotateCcw className="size-3.5" /> 초기화
           </button>
@@ -101,18 +103,21 @@ export function TalentListPage() {
           </h2>
           <ul className="mt-3 space-y-2">
             {mine.map(talent => (
-              <li key={talent.id} className="flex items-center gap-3 rounded-xl border border-[#ECECEC] bg-white p-3">
+              // 폰에서는 소개를 한 줄 전체로 보이고, 버튼 두 개는 아래 줄에 반씩
+              <li key={talent.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-[#ECECEC] bg-white p-3">
                 <PhotoTile talent={talent} className="size-10 shrink-0 rounded-full" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[15px] font-bold">{talent.headline}</p>
                   <p className="truncate text-[13px] text-muted-foreground">{talent.skills.slice(0, 4).join(' · ')}</p>
                 </div>
-                <a href={href.talentEdit(talent.id)} className="inline-flex h-9 items-center gap-1 rounded-full border border-[#E2E2E2] px-3 text-[13px] hover:bg-[#F4F4F4]">
-                  <Pencil className="size-3.5" /> 고치기
-                </a>
-                <a href={href.talent(talent.id)} className="inline-flex h-9 items-center gap-0.5 rounded-full bg-[#161616] px-3.5 text-[13px] font-semibold text-white">
-                  보기 <ChevronRight className="size-4" />
-                </a>
+                <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
+                  <a href={href.talentEdit(talent.id)} className="inline-flex h-10 items-center justify-center gap-1 rounded-full border border-[#E2E2E2] px-3 text-[13px] hover:bg-[#F4F4F4] sm:h-9">
+                    <Pencil className="size-3.5" /> 고치기
+                  </a>
+                  <a href={href.talent(talent.id)} className="inline-flex h-10 items-center justify-center gap-0.5 rounded-full bg-[#161616] px-3.5 text-[13px] font-semibold text-white sm:h-9">
+                    보기 <ChevronRight className="size-4" />
+                  </a>
+                </div>
               </li>
             ))}
           </ul>
