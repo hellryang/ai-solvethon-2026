@@ -46,11 +46,11 @@ export function MetaDivider() {
 
 /**
  * "월 +67.7만원" 금액. 카드에서 가장 먼저 보이는 자리. 배경 없이 글씨로만 보인다.
- * 양수는 빨강 ▲, 음수는 회색 ▼, 0이면 회색 "서울과 비슷".
+ * 양수는 빨강 ▲, 음수는 연한 빨강 ▼, 0이면 회색 "서울과 비슷".
  */
 export function AdvantageBadge({ won }: { won: number }) {
   if (won === 0) {
-    return <span className="text-[18px] font-bold text-[#7A7A7A]">서울과 비슷</span>
+    return <span className="text-[22px] font-bold text-[#7A7A7A]">서울과 비슷</span>
   }
   const up = won > 0
   const text = signedManwon(won)
@@ -59,7 +59,7 @@ export function AdvantageBadge({ won }: { won: number }) {
   return (
     <span
       className={cn(
-        'inline-flex items-baseline gap-[2px]',
+        'inline-flex items-baseline gap-[2px] leading-none',
         up ? 'text-[#D9261C]' : 'text-[#F07A70]',
       )}
     >
@@ -68,6 +68,30 @@ export function AdvantageBadge({ won }: { won: number }) {
       <span className="text-[18px] font-extrabold">{number}</span>
       <span className="text-[13px] font-semibold">{unit}</span>
     </span>
+  )
+}
+
+/** 적합도 막대. 그라데이션은 트랙 전체 기준이라 점수가 높을수록 끝이 진해진다 */
+export function FitBar({ score }: { score: number }) {
+  const value = Math.max(0, Math.min(100, Math.round(score)))
+  return (
+    <div className="flex shrink-0 items-center gap-2" aria-label={`적합도 ${value}점`}>
+      <span className="text-[13px] text-[#7A7A7A]">적합도</span>
+      <div className="relative h-[8px] w-[120px] overflow-hidden rounded-[4px] bg-[#F0F0F0]">
+        <div
+          className="absolute inset-y-0 left-0 rounded-[4px]"
+          style={{
+            width: `${value}%`,
+            backgroundImage: 'linear-gradient(90deg, #FBE3E1, #D9261C)',
+            backgroundSize: '120px 100%',
+          }}
+        />
+      </div>
+      <span className="w-[38px] text-right text-[#161616]">
+        <span className="text-[15px] font-bold">{value}</span>
+        <span className="text-[11px] font-semibold">점</span>
+      </span>
+    </div>
   )
 }
 

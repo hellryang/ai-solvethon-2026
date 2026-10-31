@@ -2,8 +2,7 @@
 // 로드맵에는 이 두 가지만 넣는다 (10/30 결정). 부족한 능력·자격증·개월은 코드가 정하고, 프로젝트 이름만 AI가 쓴다.
 
 import { useState } from 'react'
-import { ChevronUp, Loader2, Sparkles, X } from 'lucide-react'
-
+import { GripVertical, Loader2, Sparkles, X } from 'lucide-react'
 import { EmptyState, ErrorBanner } from '@/components/common'
 import { Button } from '@/components/ui/button'
 import { errorMessage } from '@/lib/api'
@@ -15,6 +14,27 @@ import type { CompareResponse, RoadmapResponse, SavingsProfile } from '@/types'
 
 export function RoadmapPage({ profile, picks }: { profile: SavingsProfile; picks: Picks }) {
   const { data, error, retry } = useCompares(profile, picks.ids)
+  const [dragId, setDragId] = useState<string | null>(null)
+  const [overIndex, setOverIndex] = useState<number | null>(null)
+
+  /** id를 to 자리로 옮긴다. 이미 있는 moveUp(한 칸 위로)을 여러 번 불러서 만든다 */
+  function moveTo(id: string, to: number) {
+    const ids = picks.ids
+    const from = ids.indexOf(id)
+    if (from < 0 || from === to) return
+    if (to < from) {
+      for (let i = 0; i < from - to; i++) picks.moveUp(id)
+    } else {
+      for (let k = from + 1; k <= to; k++) picks.moveUp(ids[k])
+    }
+  }
+
+  
+
+  function endDrag() {
+    setDragId(null)
+    setOverIndex(null)
+  }
 
   return (
     <>
@@ -22,7 +42,7 @@ export function RoadmapPage({ profile, picks }: { profile: SavingsProfile; picks
         <h1 id="roadmap-title" className="text-lg font-bold">④ 준비 로드맵</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           마음에 드는 회사를 담으면 부족한 능력을 찾고, 필요 자격증과 회사별 프로젝트를 개월 순서로 짜 줍니다.
-          순서가 곧 순위입니다.
+          순서가 곧 순위입니다. ⠿를 끌어서 순위를 바꿀 수 있어요.
         </p>
 
         {picks.ids.length === 0 ? (
@@ -39,21 +59,47 @@ export function RoadmapPage({ profile, picks }: { profile: SavingsProfile; picks
             {picks.ids.map((id, index) => {
               const result = data?.[index]
               const name = result?.project.display_name ?? id
+              const dragging = dragId === id
+              const isOver = overIndex === index && dragId !== null && !dragging
               return (
-                <li key={id} className="flex flex-wrap items-center gap-2 rounded-lg border p-3">
-                  <span className="text-sm font-bold">{index + 1}순위</span>
-                  <a href={href.compare(id)} className="min-w-0 flex-1 truncate text-sm font-semibold hover:underline">
+                <li
+                  key={id}
+                  draggable
+                  onDragStart={e => {
+                    setDragId(id)
+                    e.dataTransfer.effectAllowed = 'move'
+                    e.dataTransfer.setData('text/plain', id)
+                  }}
+                  onDragOver={e => {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = 'move'
+                    if (overIndex !== index) setOverIndex(index)
+                  }}
+                  onDrop={e => {
+                    e.preventDefault()
+                    const moving = dragId ?? e.dataTransfer.getData('text/plain')
+                    if (moving) moveTo(moving, index)
+                    endDrag()
+                  }}
+                  onDragEnd={endDrag}
+                  className={`flex items-center gap-2 rounded-[12px] border bg-white p-3 transition-colors ${
+                    dragging ? 'opacity-40' : ''
+                  } ${isOver ? 'border-[#D9261C] bg-[#FDEEEC]' : 'border-[#ECECEC]'}`}
+                >
+                  <span
+                    className="flex h-8 w-6 shrink-0 cursor-grab items-center justify-center rounded-md text-[#9A9A9A] hover:bg-[#F4F4F4] active:cursor-grabbing"
+                    title="끌어서 순위 바꾸기" aria-hidden
+                  >
+                    <GripVertical className="size-4" />
+                  </span>
+                  <span className="w-11 shrink-0 text-sm font-bold">{index + 1}순위</span>
+                  <a href={href.compare(id)} draggable={false} className="min-w-0 flex-1 truncate text-sm font-semibold hover:underline">
                     {name}
                     {result && <span className="font-normal text-muted-foreground"> · {result.project.work}</span>}
                   </a>
-                  <Button
-                    type="button" size="sm" variant="ghost" disabled={index === 0}
-                    aria-label={`${name} 순위 올리기`} onClick={() => picks.moveUp(id)}
-                  >
-                    <ChevronUp /> 위로
-                  </Button>
-                  <Button type="button" size="sm" variant="ghost" aria-label={`${name} 빼기`} onClick={() => picks.remove(id)}>
-                    <X /> 빼기
+                  
+                  <Button type="button" size="icon-xs" variant="ghost" aria-label={`${name} 빼기`} onClick={() => picks.remove(id)}>
+                    <X />
                   </Button>
                 </li>
               )

@@ -1,5 +1,5 @@
 // 전남·광주 공고 카드. 이랜서 "추천 프로젝트" 카드 순서를 따른다 (docs/ui-reference.md §3):
-// 남는 돈 배지 → [조건 요약] 제목 → 기술 태그 → 메타 4칸(지역·연봉·월세·교통).
+// 남는 돈 배지 + 적합도 막대 → 비교에 담기 → [조건 요약] 제목 → 기술 태그 → 메타 4칸(지역·연봉·월세·교통).
 
 import { ArrowRight, Check, Plus } from 'lucide-react'
 
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { href } from '@/lib/router'
 import { manwon, salaryText } from '@/lib/savings'
 import type { CompareResponse } from '@/types'
-import { AdvantageBadge, MetaDivider, MetaItem, SkillTag } from './parts'
+import { AdvantageBadge, FitBar, MetaDivider, MetaItem, SkillTag } from './parts'
 
 interface ProjectCardProps {
   result: CompareResponse
@@ -22,28 +22,32 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ result, rank, picked, pickDisabled, onTogglePick, showDetail = true }: ProjectCardProps) {
-  const { project, fit, jeonnam, seoul_project: seoul } = result
+  const { project, fit, jeonnam } = result
   const owned = new Set(fit.owned_hits)
   const extended = new Set(fit.extended_hits)
   const titleId = `project-${project.id}`
 
   return (
     <article aria-labelledby={titleId} className="rounded-xl border bg-card p-5 md:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          {rank !== undefined && <span className="text-[13px] font-bold">{rank}위</span>}
+      {/* 윗줄: 왼쪽 금액, 오른쪽 적합도 막대 */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          {rank !== undefined && <span className="mr-1 text-[15px] font-bold">{rank}위</span>}
           <AdvantageBadge won={result.advantage_monthly} />
-          <span className="text-[13px] text-muted-foreground">
-            같은 일 서울 공고({seoul.display_name}) 대비 · 적합도 {fit.score}점
-          </span>
+          <span className="ml-1 text-[14px] text-muted-foreground">같은 일 서울 대비</span>
         </div>
+        <FitBar score={fit.score} />
+      </div>
+
+      {/* 비교에 담기 */}
+      <div className="mt-3">
         <Button
-          type="button" size="sm" variant={picked ? 'default' : 'outline'} className="h-9 rounded-full sm:h-7"
+          type="button" size="sm" variant={picked ? 'default' : 'outline'} className="h-9 rounded-full sm:h-8"
           aria-pressed={picked} disabled={!picked && pickDisabled} onClick={onTogglePick}
           title={!picked && pickDisabled ? '최대 3곳까지 담을 수 있습니다' : undefined}
         >
           {picked ? <Check /> : <Plus />}
-          {picked ? '비교에 담음' : '비교에 담기'}
+          {picked ? '카트에 담음' : '카트에 담기'}
         </Button>
       </div>
 
